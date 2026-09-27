@@ -8,6 +8,7 @@ c4-forge is an open-source, self-hosted tool for modeling software architecture 
 
 - What we build and why: [`docs/requirements.md`](docs/requirements.md). Requirement IDs (e.g. `DG-8`, `NF-16`) are referenced throughout the repo.
 - How and why key technical choices were made: [`docs/adr/`](docs/adr/).
+- What we build next, step by step: [`docs/roadmap.md`](docs/roadmap.md). Work on one roadmap step at a time.
 
 Read the relevant requirements and ADRs before changing anything they cover.
 
