@@ -14,3 +14,4 @@ An accepted ADR is not edited in substance. If a decision changes, a new ADR sup
 | --- | --- | --- |
 | [0001](0001-canvas-library.md) | Canvas library for C4 diagrams and freeform drawing | Proposed |
 | [0002](0002-collaboration-engine.md) | Collaborative editing engine | Proposed |
+| [0003](0003-data-model-and-storage.md) | Data model and PostgreSQL storage | Proposed |
