@@ -1,6 +1,6 @@
 # ADR-0003: Data model and PostgreSQL storage
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-28
 - **Related requirements:** MD-1…MD-11, DG-1…DG-16, FR-1…FR-6, HI-1…HI-3, SZ-1…SZ-9, SE-1, EX-2, NF-1, NF-4, NF-5, NF-7, NF-9
 - **Builds on:** ADR-0002 (operations, per-workspace sequence, operation log, durable-before-ack)
@@ -21,7 +21,7 @@ Storage has to serve several consumers:
 
 Scale is modest (section 4 of the requirements): up to ~2,000 elements per workspace and hundreds of workspaces.
 
-## Decision (proposed)
+## Decision
 
 ### 1. Metamodel
 
@@ -122,7 +122,7 @@ The model is single-tenant (one organization per instance), so there is no tenan
 
 - Driver: `pgx` v5.
 - Queries: `sqlc`, which generates typed Go code from SQL. Dynamic queries are few (search, filters) and can be written by hand.
-- Migrations: plain SQL files embedded in the binary and applied automatically at startup (NF-4). They are forward-only; every migration must be safe for the previous release's data. The migration library is chosen in the first implementation step; `goose` is the default candidate.
+- Migrations: embedded in the binary and applied automatically at startup (NF-4). Schema changes are written as SQL files, which `sqlc` also reads. Migrations that need logic (for example, transforming data) are written in Go. Migrations are forward-only; every migration must be safe for the previous release's data. The migration library is chosen in the first implementation step; `goose` is the default candidate, since it supports both SQL and Go migrations.
 - Supported PostgreSQL: 16 and newer. `docker-compose.yml` pins a current major version. The `pg_trgm` extension is required; it ships with the official image.
 
 ## Consequences
