@@ -1,6 +1,6 @@
 # ADR-0002: Collaborative editing engine
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-28
 - **Related requirements:** CO-1…CO-5, DG-18, HI-1, HI-2, NF-7, NF-8, NF-9, SZ-9, EX-3
 
@@ -56,7 +56,7 @@ Designed mainly for text. For a structured model it adds a lot of complexity ove
 
 Simple, but contradicts the real-time co-editing experience (CO-1, CO-2). Rejected.
 
-## Decision (proposed)
+## Decision
 
 **Option A: server-authoritative operations with last-writer-wins per field**, for all structured data.
 
