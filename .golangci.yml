@@ -1,0 +1,28 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - gosec
+    - noctx
+    - revive
+  exclusions:
+    presets:
+      - comments
+      - std-error-handling
+    rules:
+      # Tests may ignore errors and use weak constructs freely.
+      - path: _test\.go
+        linters:
+          - gosec
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/Meidorislav/c4-forge
