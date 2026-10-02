@@ -14,7 +14,34 @@ Read the relevant requirements and ADRs before changing anything they cover.
 
 ## Current stage
 
-Design is in progress; there is no application code yet. Do not scaffold or generate code unless the task explicitly asks for it.
+Implementation follows [`docs/roadmap.md`](docs/roadmap.md), one step at a time. Do not build ahead of the current step.
+
+## Repository layout
+
+```
+cmd/c4forge/        entry point: flags, config, logger, server lifecycle
+internal/config/    configuration from C4FORGE_* environment variables
+internal/server/    HTTP router (chi), middleware, handlers
+internal/buildinfo/ version and revision of the binary
+docs/               requirements, ADRs, roadmap
+```
+
+## Build and test
+
+Requires Go (version in `go.mod`) and [golangci-lint](https://golangci-lint.run) v2.
+
+```bash
+make build   # binary in bin/c4forge
+make run     # run locally with text logs
+make test    # all tests with the race detector
+make lint    # linters
+make fmt     # format code
+make tidy    # tidy go.mod/go.sum
+```
+
+CI (`.github/workflows/ci.yml`) runs lint, tests with `-race`, build and a `go mod tidy` check on every pull request. Keep it green.
+
+Configuration is read from environment variables with the `C4FORGE_` prefix; see `internal/config`.
 
 ## How we work
 
