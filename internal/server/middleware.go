@@ -51,9 +51,9 @@ func requestLogger(log *slog.Logger) func(http.Handler) http.Handler {
 			if status == 0 {
 				status = http.StatusOK
 			}
-			// Health probes run every few seconds; keep them out of the default log level.
+			// Probes run every few seconds; keep them out of the default log level.
 			level := slog.LevelInfo
-			if r.URL.Path == "/healthz" {
+			if r.URL.Path == "/healthz" || r.URL.Path == "/readyz" {
 				level = slog.LevelDebug
 			}
 			log.LogAttrs(r.Context(), level, "http request",

@@ -76,7 +76,10 @@ func Run(ctx context.Context, args []string, getenv func(string) string, stdout,
 		"revision", buildinfo.Revision(),
 	)
 
-	if err := server.New(log, cfg.ShutdownTimeout).Serve(ctx, ln); err != nil {
+	srv := server.New(log, cfg.ShutdownTimeout,
+		server.ReadinessCheck{Name: "database", Check: pool.Ping},
+	)
+	if err := srv.Serve(ctx, ln); err != nil {
 		log.Error("server stopped with an error", "error", err)
 		return ExitError
 	}

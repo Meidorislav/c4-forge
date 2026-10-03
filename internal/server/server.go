@@ -18,11 +18,11 @@ type Server struct {
 }
 
 // New creates a server that logs to log and, once asked to stop, waits up to
-// shutdownTimeout for in-flight requests.
-func New(log *slog.Logger, shutdownTimeout time.Duration) *Server {
+// shutdownTimeout for in-flight requests. checks are reported by /readyz.
+func New(log *slog.Logger, shutdownTimeout time.Duration, checks ...ReadinessCheck) *Server {
 	return &Server{
 		http: &http.Server{
-			Handler:           NewHandler(log),
+			Handler:           NewHandler(log, checks...),
 			ReadHeaderTimeout: 10 * time.Second,
 			IdleTimeout:       2 * time.Minute,
 			// No global Read/WriteTimeout: the realtime endpoint (ADR-0002)

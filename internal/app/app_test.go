@@ -3,6 +3,9 @@ package app
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
 	"strings"
 	"sync"
 	"testing"
@@ -99,6 +102,12 @@ func TestRunUntilCancelled(t *testing.T) {
 
 	// Wait until startup (database, migrations, listener) is complete.
 	waitForLog(t, &stdout, "c4forge started")
+
+	// The service reports itself ready, with the database reachable.
+	status, body := get(t, "http://"+listenAddr(t, &stdout)+"/readyz")
+	if status != http.StatusOK || !strings.Contains(body, `"database":"ok"`) {
+		t.Errorf("/readyz = %d %s, want 200 with the database ok", status, body)
+	}
 	cancel()
 
 	select {
@@ -129,4 +138,38 @@ func TestRunUntilCancelled(t *testing.T) {
 	if !trgm {
 		t.Error("startup did not apply migrations")
 	}
+}
+
+// listenAddr returns the address from the "c4forge started" log record.
+func listenAddr(t *testing.T, logs *syncBuffer) string {
+	t.Helper()
+	for line := range strings.Lines(logs.String()) {
+		var rec struct {
+			Msg  string `json:"msg"`
+			Addr string `json:"addr"`
+		}
+		if json.Unmarshal([]byte(line), &rec) == nil && rec.Msg == "c4forge started" {
+			return rec.Addr
+		}
+	}
+	t.Fatalf("no start record in logs:\n%s", logs.String())
+	return ""
+}
+
+func get(t *testing.T, url string) (int, string) {
+	t.Helper()
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, url, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("GET %s: %v", url, err)
+	}
+	defer func() { _ = res.Body.Close() }()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return res.StatusCode, string(body)
 }

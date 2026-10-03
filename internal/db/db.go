@@ -62,7 +62,7 @@ func waitReady(ctx context.Context, pool *pgxpool.Pool, timeout time.Duration, l
 		if !retryable(err) {
 			return fmt.Errorf("connect to database: %w", err)
 		}
-		log.Warn("database not ready, retrying", "attempt", attempt, "retry_in", delay, "error", err)
+		log.Warn("database not ready, retrying", "attempt", attempt, "retry_in_ms", delay.Milliseconds(), "error", err)
 
 		select {
 		case <-ctx.Done():
