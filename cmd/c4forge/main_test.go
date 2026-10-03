@@ -47,8 +47,11 @@ func TestInvalidConfig(t *testing.T) {
 
 func TestRunUntilCancelled(t *testing.T) {
 	getenv := func(key string) string {
-		if key == "C4FORGE_HTTP_ADDR" {
+		switch key {
+		case "C4FORGE_HTTP_ADDR":
 			return "127.0.0.1:0"
+		case "C4FORGE_DATABASE_URL":
+			return "postgres://c4forge:c4forge@localhost:5432/c4forge"
 		}
 		return ""
 	}
