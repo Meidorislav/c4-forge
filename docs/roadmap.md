@@ -19,9 +19,9 @@ Steps are done in order unless noted. The canvas spike (M1) runs in parallel wit
 | # | Step | Done when | Covers | Needs | Status |
 | --- | --- | --- | --- | --- | --- |
 | 0.1 | Go service skeleton: module layout, config from env, structured logging, `/healthz`, Makefile, CI (lint + tests). | CI is green; the binary starts and answers `/healthz`. | NF-2, NF-6, NF-17 | — | done |
-| 0.2 | PostgreSQL: `docker-compose.yml` with app + Postgres, `pgx` pool, embedded migrations applied at startup, integration-test setup against a real Postgres in CI. | `docker compose up` starts both; an empty migration runs; integration tests run in CI. | NF-1, NF-4 | ADR-0003 | todo |
+| 0.2 | PostgreSQL: `docker-compose.yml` with Postgres for local development, `pgx` pool, embedded migrations applied at startup, `/readyz`, integration tests against a real Postgres (16 and 18) in CI. | `make db-up run` serves a ready app; the first migration runs at startup; integration tests run in CI. | NF-1, NF-4 | ADR-0003 | done |
 | 0.3 | Web skeleton: React + TypeScript + Vite in `web/`, embedded into the Go binary, i18n scaffolding, no external assets. | The app page is served by the binary; CI builds and tests the frontend. | NF-2, NF-3, NF-14 | 0.1 | todo |
-| 0.4 | Container image: multi-stage Dockerfile, compose uses it. | A clean machine runs the full app with `docker compose up`. | NF-1 | 0.2, 0.3 | todo |
+| 0.4 | Container image: multi-stage Dockerfile; the app joins `docker-compose.yml` next to Postgres. | A clean machine runs the full app with `docker compose up`. | NF-1 | 0.2, 0.3 | todo |
 
 ### M1 — Canvas spike (parallel, throwaway)
 

@@ -8,9 +8,15 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same branch or pull request cancels the running check.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -21,17 +27,38 @@ jobs:
           version: v2.14.0
 
   test:
+    name: test (${{ matrix.postgres }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest supported (ADR-0003) and current major version.
+        postgres: ["postgres:16", "postgres:18"]
+    env:
+      # Integration tests start this image with Testcontainers. CI=true is set
+      # by GitHub, so they fail instead of being skipped if Docker is missing.
+      C4FORGE_TEST_POSTGRES_IMAGE: ${{ matrix.postgres }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - run: make test
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
       - run: make build
 
   tidy:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7

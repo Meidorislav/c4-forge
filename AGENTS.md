@@ -19,29 +19,43 @@ Implementation follows [`docs/roadmap.md`](docs/roadmap.md), one step at a time.
 ## Repository layout
 
 ```
-cmd/c4forge/        entry point: flags, config, logger, server lifecycle
-internal/config/    configuration from C4FORGE_* environment variables
-internal/server/    HTTP router (chi), middleware, handlers
-internal/buildinfo/ version and revision of the binary
-docs/               requirements, ADRs, roadmap
+cmd/c4forge/            entry point only: signals and exit code
+internal/app/           assembles the service (flags, config, logger, dependencies) and runs it
+internal/config/        configuration from C4FORGE_* environment variables
+internal/server/        HTTP router (chi), middleware, handlers (/healthz, /readyz)
+internal/db/            PostgreSQL pool (pgx), startup checks, migrations (goose)
+internal/db/migrations/ SQL migrations, embedded into the binary
+internal/db/dbtest/     real PostgreSQL databases for integration tests (Testcontainers)
+internal/buildinfo/     version and revision of the binary
+docker-compose.yml      local PostgreSQL for development
+docs/                   requirements, ADRs, roadmap
 ```
 
 ## Build and test
 
-Requires Go (version in `go.mod`) and [golangci-lint](https://golangci-lint.run) v2.
+Requires Go (version in `go.mod`), [golangci-lint](https://golangci-lint.run) v2 and Docker.
 
 ```bash
-make build   # binary in bin/c4forge
-make run     # run locally with text logs
-make test    # all tests with the race detector
-make lint    # linters
-make fmt     # format code
-make tidy    # tidy go.mod/go.sum
+make db-up      # start local PostgreSQL (docker compose), wait until healthy
+make run        # run the server against it with text logs
+make db-down    # stop it, keeping data; make db-reset also deletes the data
+make build      # binary in bin/c4forge
+make test       # all tests with the race detector
+make lint       # linters
+make fmt        # format code
+make tidy       # tidy go.mod/go.sum
 ```
 
-CI (`.github/workflows/ci.yml`) runs lint, tests with `-race`, build and a `go mod tidy` check on every pull request. Keep it green.
+- **Configuration** comes from environment variables with the `C4FORGE_` prefix; see `internal/config`. `C4FORGE_DATABASE_URL` is required; `make run` points it at the local database. Override any variable from the shell, e.g. `C4FORGE_HTTP_ADDR=:8081 make run`.
+- **Integration tests** use `dbtest.NewDatabase(t)`, which gives each test its own empty database on a PostgreSQL container started once per test binary. Docker must be running; without it these tests are skipped locally and fail in CI. `C4FORGE_TEST_POSTGRES_IMAGE` selects the image (default `postgres:18`).
+- **CI** (`.github/workflows/ci.yml`) runs lint, tests with `-race` on PostgreSQL 16 and 18, build and a `go mod tidy` check on every pull request. Keep it green.
 
-Configuration is read from environment variables with the `C4FORGE_` prefix; see `internal/config`.
+## Database migrations
+
+- Add a new file `internal/db/migrations/NNNNN_description.sql` with the next number and a `-- +goose Up` section. Migrations run automatically at startup.
+- Migrations are forward-only (ADR-0003): no `Down` sections, and every migration must work on the data of the previous release.
+- Never edit a migration that has been merged; add a new one instead.
+- Use SQL for schema changes. Write a Go migration only when the change needs logic SQL cannot express well.
 
 ## How we work
 

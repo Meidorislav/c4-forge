@@ -8,6 +8,8 @@ import (
 	"net"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // LogFormat selects how log records are encoded.
@@ -29,9 +31,15 @@ type Config struct {
 	// ShutdownTimeout bounds how long in-flight requests may take to finish
 	// after a shutdown signal (C4FORGE_SHUTDOWN_TIMEOUT).
 	ShutdownTimeout time.Duration
+	// DatabaseURL is the PostgreSQL connection string, as a URL or in
+	// keyword/value form (C4FORGE_DATABASE_URL). Required. Pool settings such
+	// as pool_max_conns can be passed as parameters. It contains credentials
+	// and must never be logged.
+	DatabaseURL string
 }
 
-// Default returns the configuration used when no variables are set.
+// Default returns the defaults for optional settings. Required settings, such
+// as DatabaseURL, are left empty.
 func Default() Config {
 	return Config{
 		HTTPAddr:        ":8080",
@@ -42,8 +50,8 @@ func Default() Config {
 }
 
 // Load reads the configuration using getenv (usually os.Getenv). Unset or
-// empty variables keep their defaults. All invalid values are reported
-// together.
+// empty optional variables keep their defaults; missing required ones are
+// errors. All problems are reported together.
 func Load(getenv func(string) string) (Config, error) {
 	cfg := Default()
 	var errs []error
@@ -84,6 +92,15 @@ func Load(getenv func(string) string) (Config, error) {
 		default:
 			cfg.ShutdownTimeout = d
 		}
+	}
+
+	if v := getenv("C4FORGE_DATABASE_URL"); v == "" {
+		errs = append(errs, errors.New("C4FORGE_DATABASE_URL: required, e.g. postgres://user:password@localhost:5432/c4forge"))
+	} else if _, err := pgxpool.ParseConfig(v); err != nil {
+		// pgx masks the password in its parse errors.
+		errs = append(errs, fmt.Errorf("C4FORGE_DATABASE_URL: %w", err))
+	} else {
+		cfg.DatabaseURL = v
 	}
 
 	return cfg, errors.Join(errs...)

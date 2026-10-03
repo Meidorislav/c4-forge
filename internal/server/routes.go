@@ -11,17 +11,19 @@ import (
 )
 
 // NewHandler returns the root HTTP handler with all routes and middleware.
-func NewHandler(log *slog.Logger) http.Handler {
+// checks are the dependencies behind /readyz.
+func NewHandler(log *slog.Logger, checks ...ReadinessCheck) http.Handler {
 	r := chi.NewRouter()
 	r.Use(requestID, requestLogger(log), recoverer(log))
 
 	r.Get("/healthz", healthz)
+	r.Get("/readyz", readyz(log, checks))
 
 	return r
 }
 
-// healthz reports that the process is alive. It does not check dependencies;
-// readiness checks come with the database (roadmap step 0.2).
+// healthz reports that the process is alive. It does not check
+// dependencies; see readyz for that.
 func healthz(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{
 		"status":  "ok",
