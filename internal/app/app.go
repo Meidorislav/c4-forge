@@ -9,9 +9,11 @@ import (
 	"io"
 	"log/slog"
 	"net"
+	"time"
 
 	"github.com/Meidorislav/c4-forge/internal/buildinfo"
 	"github.com/Meidorislav/c4-forge/internal/config"
+	"github.com/Meidorislav/c4-forge/internal/db"
 	"github.com/Meidorislav/c4-forge/internal/server"
 )
 
@@ -21,6 +23,10 @@ const (
 	ExitError  = 1
 	ExitConfig = 2
 )
+
+// dbConnectTimeout bounds how long startup waits for PostgreSQL, e.g. while
+// both containers are still starting.
+const dbConnectTimeout = 30 * time.Second
 
 // Run parses args, loads the configuration via getenv and serves until ctx is
 // cancelled. It returns a process exit code. Run touches no process-global
@@ -46,6 +52,17 @@ func Run(ctx context.Context, args []string, getenv func(string) string, stdout,
 		return ExitConfig
 	}
 	log := newLogger(stdout, cfg)
+
+	pool, err := db.Connect(ctx, cfg.DatabaseURL, dbConnectTimeout, log)
+	if err != nil {
+		log.Error("cannot connect to the database", "error", err)
+		return ExitError
+	}
+	defer pool.Close()
+	if err := db.Migrate(ctx, pool, log); err != nil {
+		log.Error("cannot migrate the database", "error", err)
+		return ExitError
+	}
 
 	var lc net.ListenConfig
 	ln, err := lc.Listen(ctx, "tcp", cfg.HTTPAddr)

@@ -4,11 +4,47 @@ import (
 	"bytes"
 	"context"
 	"strings"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/jackc/pgx/v5"
+
+	"github.com/Meidorislav/c4-forge/internal/db/dbtest"
 )
 
 func noEnv(string) string { return "" }
+
+// syncBuffer is a bytes.Buffer that can be written by the service while the
+// test reads it.
+type syncBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *syncBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *syncBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
+}
+
+// waitForLog waits until the logs contain msg.
+func waitForLog(t *testing.T, logs *syncBuffer, msg string) {
+	t.Helper()
+	deadline := time.Now().Add(30 * time.Second)
+	for !strings.Contains(logs.String(), msg) {
+		if time.Now().After(deadline) {
+			t.Fatalf("timed out waiting for log %q; logs:\n%s", msg, logs.String())
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+}
 
 func TestVersionFlag(t *testing.T) {
 	var stdout, stderr bytes.Buffer
@@ -46,22 +82,23 @@ func TestInvalidConfig(t *testing.T) {
 }
 
 func TestRunUntilCancelled(t *testing.T) {
+	databaseURL := dbtest.NewDatabase(t)
 	getenv := func(key string) string {
 		switch key {
 		case "C4FORGE_HTTP_ADDR":
 			return "127.0.0.1:0"
 		case "C4FORGE_DATABASE_URL":
-			return "postgres://c4forge:c4forge@localhost:5432/c4forge"
+			return databaseURL
 		}
 		return ""
 	}
 	ctx, cancel := context.WithCancel(t.Context())
-	var stdout, stderr bytes.Buffer
+	var stdout, stderr syncBuffer
 	done := make(chan int, 1)
 	go func() { done <- Run(ctx, nil, getenv, &stdout, &stderr) }()
 
-	// Let the server start before stopping it.
-	time.Sleep(100 * time.Millisecond)
+	// Wait until startup (database, migrations, listener) is complete.
+	waitForLog(t, &stdout, "c4forge started")
 	cancel()
 
 	select {
@@ -72,9 +109,24 @@ func TestRunUntilCancelled(t *testing.T) {
 	case <-time.After(5 * time.Second):
 		t.Fatal("Run() did not return after cancellation")
 	}
-	for _, msg := range []string{"c4forge started", "c4forge stopped"} {
+	for _, msg := range []string{"database schema is up to date", "c4forge started", "c4forge stopped"} {
 		if !strings.Contains(stdout.String(), msg) {
 			t.Errorf("logs do not contain %q: %s", msg, stdout.String())
 		}
+	}
+
+	// Startup migrated the database.
+	conn, err := pgx.Connect(t.Context(), databaseURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close(t.Context())
+	var trgm bool
+	if err := conn.QueryRow(t.Context(),
+		"SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm')").Scan(&trgm); err != nil {
+		t.Fatal(err)
+	}
+	if !trgm {
+		t.Error("startup did not apply migrations")
 	}
 }
