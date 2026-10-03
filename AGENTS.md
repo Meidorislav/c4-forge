@@ -19,7 +19,8 @@ Implementation follows [`docs/roadmap.md`](docs/roadmap.md), one step at a time.
 ## Repository layout
 
 ```
-cmd/c4forge/        entry point: flags, config, logger, server lifecycle
+cmd/c4forge/        entry point only: signals and exit code
+internal/app/       assembles the service (flags, config, logger, dependencies) and runs it
 internal/config/    configuration from C4FORGE_* environment variables
 internal/server/    HTTP router (chi), middleware, handlers
 internal/buildinfo/ version and revision of the binary

@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"bytes"
@@ -12,9 +12,9 @@ func noEnv(string) string { return "" }
 
 func TestVersionFlag(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	code := run(t.Context(), []string{"--version"}, noEnv, &stdout, &stderr)
-	if code != exitOK {
-		t.Fatalf("exit code = %d, want %d; stderr: %s", code, exitOK, stderr.String())
+	code := Run(t.Context(), []string{"--version"}, noEnv, &stdout, &stderr)
+	if code != ExitOK {
+		t.Fatalf("exit code = %d, want %d; stderr: %s", code, ExitOK, stderr.String())
 	}
 	if !strings.HasPrefix(stdout.String(), "c4forge ") {
 		t.Errorf("stdout = %q, want a version line", stdout.String())
@@ -23,8 +23,8 @@ func TestVersionFlag(t *testing.T) {
 
 func TestUnknownFlag(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	if code := run(t.Context(), []string{"--nope"}, noEnv, &stdout, &stderr); code != exitConfig {
-		t.Errorf("exit code = %d, want %d", code, exitConfig)
+	if code := Run(t.Context(), []string{"--nope"}, noEnv, &stdout, &stderr); code != ExitConfig {
+		t.Errorf("exit code = %d, want %d", code, ExitConfig)
 	}
 }
 
@@ -36,9 +36,9 @@ func TestInvalidConfig(t *testing.T) {
 		}
 		return ""
 	}
-	code := run(t.Context(), nil, getenv, &stdout, &stderr)
-	if code != exitConfig {
-		t.Fatalf("exit code = %d, want %d", code, exitConfig)
+	code := Run(t.Context(), nil, getenv, &stdout, &stderr)
+	if code != ExitConfig {
+		t.Fatalf("exit code = %d, want %d", code, ExitConfig)
 	}
 	if !strings.Contains(stderr.String(), "C4FORGE_LOG_FORMAT") {
 		t.Errorf("stderr = %q, want it to name the invalid variable", stderr.String())
@@ -58,7 +58,7 @@ func TestRunUntilCancelled(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	var stdout, stderr bytes.Buffer
 	done := make(chan int, 1)
-	go func() { done <- run(ctx, nil, getenv, &stdout, &stderr) }()
+	go func() { done <- Run(ctx, nil, getenv, &stdout, &stderr) }()
 
 	// Let the server start before stopping it.
 	time.Sleep(100 * time.Millisecond)
@@ -66,11 +66,11 @@ func TestRunUntilCancelled(t *testing.T) {
 
 	select {
 	case code := <-done:
-		if code != exitOK {
-			t.Fatalf("exit code = %d, want %d; output: %s%s", code, exitOK, stdout.String(), stderr.String())
+		if code != ExitOK {
+			t.Fatalf("exit code = %d, want %d; output: %s%s", code, ExitOK, stdout.String(), stderr.String())
 		}
 	case <-time.After(5 * time.Second):
-		t.Fatal("run() did not return after cancellation")
+		t.Fatal("Run() did not return after cancellation")
 	}
 	for _, msg := range []string{"c4forge started", "c4forge stopped"} {
 		if !strings.Contains(stdout.String(), msg) {
