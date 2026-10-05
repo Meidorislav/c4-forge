@@ -25,6 +25,14 @@ jobs:
       - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.14.0
+      # The "ui" build tag embeds frontend/dist; a placeholder is enough to
+      # type-check that variant without building the frontend.
+      - name: Placeholder UI for the ui build tag
+        run: mkdir -p frontend/dist && echo '<!doctype html>' > frontend/dist/index.html
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.14.0
+          args: --build-tags ui
 
   test:
     name: test (${{ matrix.postgres }})
@@ -46,6 +54,28 @@ jobs:
           go-version-file: go.mod
       - run: make test
 
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -54,7 +84,18 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      # Builds the frontend and the binary with the UI embedded.
       - run: make build
+      - name: Check the UI is embedded
+        run: go test -tags ui ./frontend/
 
   tidy:
     runs-on: ubuntu-latest

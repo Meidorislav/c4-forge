@@ -32,10 +32,10 @@ func getReadyz(t *testing.T, h http.Handler) (int, readyResponse) {
 func ok(context.Context) error { return nil }
 
 func TestReadyzAllChecksPass(t *testing.T) {
-	h := NewHandler(slog.New(slog.DiscardHandler),
-		ReadinessCheck{Name: "database", Check: ok},
-		ReadinessCheck{Name: "other", Check: ok},
-	)
+	h := NewHandler(slog.New(slog.DiscardHandler), Options{ReadinessChecks: []ReadinessCheck{
+		{Name: "database", Check: ok},
+		{Name: "other", Check: ok},
+	}})
 	code, body := getReadyz(t, h)
 	if code != http.StatusOK || body.Status != "ready" {
 		t.Errorf("got %d %q, want 200 ready", code, body.Status)
@@ -46,7 +46,7 @@ func TestReadyzAllChecksPass(t *testing.T) {
 }
 
 func TestReadyzWithoutChecksIsReady(t *testing.T) {
-	code, body := getReadyz(t, NewHandler(slog.New(slog.DiscardHandler)))
+	code, body := getReadyz(t, NewHandler(slog.New(slog.DiscardHandler), Options{}))
 	if code != http.StatusOK || body.Status != "ready" {
 		t.Errorf("got %d %q, want 200 ready", code, body.Status)
 	}
@@ -57,10 +57,10 @@ func TestReadyzFailingCheck(t *testing.T) {
 	failing := func(context.Context) error {
 		return errors.New("dial tcp 10.0.0.5:5432: connection refused")
 	}
-	h := NewHandler(testLogger(&logs),
-		ReadinessCheck{Name: "database", Check: failing},
-		ReadinessCheck{Name: "other", Check: ok},
-	)
+	h := NewHandler(testLogger(&logs), Options{ReadinessChecks: []ReadinessCheck{
+		{Name: "database", Check: failing},
+		{Name: "other", Check: ok},
+	}})
 
 	code, body := getReadyz(t, h)
 	if code != http.StatusServiceUnavailable || body.Status != "not ready" {
@@ -85,7 +85,7 @@ func TestReadyzCheckTimesOut(t *testing.T) {
 		<-ctx.Done()
 		return ctx.Err()
 	}
-	h := NewHandler(slog.New(slog.DiscardHandler), ReadinessCheck{Name: "database", Check: hanging})
+	h := NewHandler(slog.New(slog.DiscardHandler), Options{ReadinessChecks: []ReadinessCheck{{Name: "database", Check: hanging}}})
 
 	start := time.Now()
 	code, _ := getReadyz(t, h)
@@ -99,7 +99,7 @@ func TestReadyzCheckTimesOut(t *testing.T) {
 
 func TestHealthzIgnoresFailingChecks(t *testing.T) {
 	failing := func(context.Context) error { return errors.New("down") }
-	h := NewHandler(slog.New(slog.DiscardHandler), ReadinessCheck{Name: "database", Check: failing})
+	h := NewHandler(slog.New(slog.DiscardHandler), Options{ReadinessChecks: []ReadinessCheck{{Name: "database", Check: failing}}})
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/healthz", nil))
 	if rec.Code != http.StatusOK {

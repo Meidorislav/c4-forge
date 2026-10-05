@@ -22,33 +22,46 @@ Implementation follows [`docs/roadmap.md`](docs/roadmap.md), one step at a time.
 cmd/c4forge/            entry point only: signals and exit code
 internal/app/           assembles the service (flags, config, logger, dependencies) and runs it
 internal/config/        configuration from C4FORGE_* environment variables
-internal/server/        HTTP router (chi), middleware, handlers (/healthz, /readyz)
+internal/server/        HTTP router (chi), middleware, /healthz, /readyz, web UI serving, security headers
 internal/db/            PostgreSQL pool (pgx), startup checks, migrations (goose)
 internal/db/migrations/ SQL migrations, embedded into the binary
 internal/db/dbtest/     real PostgreSQL databases for integration tests (Testcontainers)
 internal/buildinfo/     version and revision of the binary
+frontend/               web UI: React, TypeScript, Vite; embed*.go embeds the build into the binary
+frontend/src/i18n/      i18next setup and translation catalogs
 docker-compose.yml      local PostgreSQL for development
 docs/                   requirements, ADRs, roadmap
 ```
 
 ## Build and test
 
-Requires Go (version in `go.mod`), [golangci-lint](https://golangci-lint.run) v2 and Docker.
+Requires Go (version in `go.mod`), [golangci-lint](https://golangci-lint.run) v2, Docker, and for the frontend Node.js (version in `.nvmrc`) with [pnpm](https://pnpm.io) (version in `frontend/package.json`).
 
 ```bash
-make db-up      # start local PostgreSQL (docker compose), wait until healthy
-make run        # run the server against it with text logs
-make db-down    # stop it, keeping data; make db-reset also deletes the data
-make build      # binary in bin/c4forge
-make test       # all tests with the race detector
-make lint       # linters
-make fmt        # format code
-make tidy       # tidy go.mod/go.sum
+make db-up         # start local PostgreSQL (docker compose), wait until healthy
+make run           # run the Go server against it with text logs
+make frontend-dev  # run the UI with hot reload on :5173, proxying the API to the Go server
+make db-down       # stop PostgreSQL, keeping data; make db-reset also deletes the data
+make build         # build the frontend and the binary with the UI embedded (bin/c4forge)
+make build-api     # build the binary without the UI; no Node.js needed
+make test          # Go tests with the race detector
+make lint          # Go linters
+make fmt           # format Go code
+make tidy          # tidy go.mod/go.sum
 ```
 
-- **Configuration** comes from environment variables with the `C4FORGE_` prefix; see `internal/config`. `C4FORGE_DATABASE_URL` is required; `make run` points it at the local database. Override any variable from the shell, e.g. `C4FORGE_HTTP_ADDR=:8081 make run`.
+Frontend commands run in `frontend/`: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm format`, `pnpm build`.
+
+- **Configuration** comes from environment variables with the `C4FORGE_` prefix; see `internal/config`. `C4FORGE_DATABASE_URL` is required; `make run` points it at the local database. Override any variable from the shell, e.g. `C4FORGE_HTTP_ADDR=:8081 make run`, then `make frontend-dev C4FORGE_DEV_API_URL=http://localhost:8081`.
 - **Integration tests** use `dbtest.NewDatabase(t)`, which gives each test its own empty database on a PostgreSQL container started once per test binary. Docker must be running; without it these tests are skipped locally and fail in CI. `C4FORGE_TEST_POSTGRES_IMAGE` selects the image (default `postgres:18`).
-- **CI** (`.github/workflows/ci.yml`) runs lint, tests with `-race` on PostgreSQL 16 and 18, build and a `go mod tidy` check on every pull request. Keep it green.
+- **CI** (`.github/workflows/ci.yml`) runs Go lint (with and without the `ui` tag), Go tests with `-race` on PostgreSQL 16 and 18, the frontend checks, a build with the UI embedded and a `go mod tidy` check on every pull request. Keep it green.
+
+## Frontend
+
+- **The UI is embedded only with the `ui` build tag** (`make build`). Without it the server is API-only and answers non-API paths with a hint that the UI is not included.
+- **Routing.** Paths under `/api` are reserved for the API. Every other path that is not a file gets `index.html`, so client-side routes work on reload. Missing files under `/assets/` are 404.
+- **All UI text goes through i18n:** add the key to `frontend/src/i18n/locales/en.ts` and use `t("key")`. Keys are type-checked; no hard-coded strings in components.
+- **No external resources (NF-3).** The Content-Security-Policy only allows the page's own origin, so CDN scripts, remote fonts or calls to other hosts are blocked by the browser. Bundle everything.
 
 ## Database migrations
 

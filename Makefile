@@ -10,10 +10,25 @@ C4FORGE_DB_PORT      ?= 5432
 C4FORGE_DATABASE_URL ?= postgres://c4forge:c4forge@localhost:$(C4FORGE_DB_PORT)/c4forge?sslmode=disable
 export C4FORGE_DB_PORT
 
-.PHONY: build run test lint fmt tidy db-up db-down db-reset
+# Go server the frontend dev server proxies API requests to (see make run).
+C4FORGE_DEV_API_URL ?= http://localhost:8080
 
-build: ## Build the binary into bin/
+.PHONY: build build-api frontend-install frontend-build frontend-dev run test lint fmt tidy db-up db-down db-reset
+
+build: frontend-build ## Build the binary with the embedded web UI into bin/
+	go build -tags ui -trimpath -ldflags "$(LDFLAGS)" -o $(BINARY) ./cmd/c4forge
+
+build-api: ## Build the binary without the web UI (no Node.js needed)
 	go build -trimpath -ldflags "$(LDFLAGS)" -o $(BINARY) ./cmd/c4forge
+
+frontend-install: ## Install frontend dependencies exactly as locked
+	cd frontend && pnpm install --frozen-lockfile
+
+frontend-build: frontend-install ## Build the web UI into frontend/dist
+	cd frontend && pnpm build
+
+frontend-dev: frontend-install ## Run the UI with hot reload on :5173, proxying the API to the Go server
+	cd frontend && C4FORGE_DEV_API_URL="$(C4FORGE_DEV_API_URL)" pnpm dev
 
 run: ## Run the server with human-readable logs against the local database (see db-up)
 	C4FORGE_DATABASE_URL="$(C4FORGE_DATABASE_URL)" C4FORGE_LOG_FORMAT=text C4FORGE_LOG_LEVEL=debug go run ./cmd/c4forge

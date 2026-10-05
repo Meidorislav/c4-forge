@@ -11,6 +11,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/Meidorislav/c4-forge/frontend"
 	"github.com/Meidorislav/c4-forge/internal/buildinfo"
 	"github.com/Meidorislav/c4-forge/internal/config"
 	"github.com/Meidorislav/c4-forge/internal/db"
@@ -70,15 +71,18 @@ func Run(ctx context.Context, args []string, getenv func(string) string, stdout,
 		log.Error("cannot listen", "addr", cfg.HTTPAddr, "error", err)
 		return ExitError
 	}
+	ui := frontend.Files()
 	log.Info("c4forge started",
 		"addr", ln.Addr().String(),
 		"version", buildinfo.Version,
 		"revision", buildinfo.Revision(),
+		"ui", ui != nil,
 	)
 
-	srv := server.New(log, cfg.ShutdownTimeout,
-		server.ReadinessCheck{Name: "database", Check: pool.Ping},
-	)
+	srv := server.New(log, cfg.ShutdownTimeout, server.Options{
+		ReadinessChecks: []server.ReadinessCheck{{Name: "database", Check: pool.Ping}},
+		UI:              ui,
+	})
 	if err := srv.Serve(ctx, ln); err != nil {
 		log.Error("server stopped with an error", "error", err)
 		return ExitError
