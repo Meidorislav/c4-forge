@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net"
 	"net/http"
@@ -17,12 +18,20 @@ type Server struct {
 	shutdownTimeout time.Duration
 }
 
+// Options configures what the server serves.
+type Options struct {
+	// ReadinessChecks are the dependencies reported by /readyz.
+	ReadinessChecks []ReadinessCheck
+	// UI is the built web UI. Nil means the binary was built without it.
+	UI fs.FS
+}
+
 // New creates a server that logs to log and, once asked to stop, waits up to
-// shutdownTimeout for in-flight requests. checks are reported by /readyz.
-func New(log *slog.Logger, shutdownTimeout time.Duration, checks ...ReadinessCheck) *Server {
+// shutdownTimeout for in-flight requests.
+func New(log *slog.Logger, shutdownTimeout time.Duration, opts Options) *Server {
 	return &Server{
 		http: &http.Server{
-			Handler:           NewHandler(log, checks...),
+			Handler:           NewHandler(log, opts),
 			ReadHeaderTimeout: 10 * time.Second,
 			IdleTimeout:       2 * time.Minute,
 			// No global Read/WriteTimeout: the realtime endpoint (ADR-0002)

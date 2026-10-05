@@ -11,13 +11,20 @@ import (
 )
 
 // NewHandler returns the root HTTP handler with all routes and middleware.
-// checks are the dependencies behind /readyz.
-func NewHandler(log *slog.Logger, checks ...ReadinessCheck) http.Handler {
+func NewHandler(log *slog.Logger, opts Options) http.Handler {
 	r := chi.NewRouter()
-	r.Use(requestID, requestLogger(log), recoverer(log))
+	r.Use(requestID, requestLogger(log), recoverer(log), securityHeaders)
 
 	r.Get("/healthz", healthz)
-	r.Get("/readyz", readyz(log, checks))
+	r.Get("/readyz", readyz(log, opts.ReadinessChecks))
+
+	// /api is reserved for the API: unknown paths there are JSON errors, not
+	// the UI's index page.
+	r.Route("/api", func(r chi.Router) {
+		r.NotFound(apiNotFound)
+	})
+
+	r.Handle("/*", uiHandler(opts.UI))
 
 	return r
 }
@@ -29,6 +36,10 @@ func healthz(w http.ResponseWriter, _ *http.Request) {
 		"status":  "ok",
 		"version": buildinfo.Version,
 	})
+}
+
+func apiNotFound(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
 }
 
 func writeJSON(w http.ResponseWriter, status int, body any) {

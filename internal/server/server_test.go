@@ -34,7 +34,7 @@ func logRecords(t *testing.T, buf *bytes.Buffer) []map[string]any {
 }
 
 func TestHealthz(t *testing.T) {
-	h := NewHandler(slog.New(slog.DiscardHandler))
+	h := NewHandler(slog.New(slog.DiscardHandler), Options{})
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/healthz", nil))
 
@@ -54,7 +54,7 @@ func TestHealthz(t *testing.T) {
 }
 
 func TestUnknownRouteIs404(t *testing.T) {
-	h := NewHandler(slog.New(slog.DiscardHandler))
+	h := NewHandler(slog.New(slog.DiscardHandler), Options{})
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/nope", nil))
 	if rec.Code != http.StatusNotFound {
@@ -76,7 +76,7 @@ func TestRequestID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var logs bytes.Buffer
-			h := NewHandler(testLogger(&logs))
+			h := NewHandler(testLogger(&logs), Options{})
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/healthz", nil)
 			if tt.incoming != "" {
 				req.Header.Set(requestIDHeader, tt.incoming)
@@ -129,7 +129,7 @@ func TestServeAndGracefulShutdown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	srv := New(slog.New(slog.DiscardHandler), 5*time.Second)
+	srv := New(slog.New(slog.DiscardHandler), 5*time.Second, Options{})
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan error, 1)
 	go func() { done <- srv.Serve(ctx, ln) }()
