@@ -97,6 +97,38 @@ jobs:
       - name: Check the UI is embedded
         run: go test -tags ui ./frontend/
 
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      # Both architectures build by cross-compiling (see Dockerfile); the
+      # result is only cached here, publishing comes with releases.
+      - name: Build image (amd64, arm64)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            VERSION=ci
+            COMMIT=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Load the amd64 image for the smoke test
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: c4forge:local
+          build-args: |
+            VERSION=ci
+            COMMIT=${{ github.sha }}
+          cache-from: type=gha
+      - name: Smoke test
+        run: scripts/smoke-test.sh
+
   tidy:
     runs-on: ubuntu-latest
     timeout-minutes: 5

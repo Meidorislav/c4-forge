@@ -16,7 +16,7 @@ COMPOSE_DEV := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 # Go server the frontend dev server proxies API requests to (see make run).
 C4FORGE_DEV_API_URL ?= http://localhost:8080
 
-.PHONY: build build-api frontend-install frontend-build frontend-dev run test lint fmt tidy db-up db-down db-reset docker-build up down
+.PHONY: build build-api frontend-install frontend-build frontend-dev run test lint fmt tidy db-up db-down db-reset docker-build up down smoke-test
 
 build: frontend-build ## Build the binary with the embedded web UI into bin/
 	go build -tags ui -trimpath -ldflags "$(LDFLAGS)" -o $(BINARY) ./cmd/c4forge
@@ -65,3 +65,6 @@ up: ## Build the image and run the whole stack (app + PostgreSQL) in Docker
 
 down: ## Stop the stack, keeping data
 	docker compose down
+
+smoke-test: docker-build ## Build the image and check that the stack starts and serves (separate compose project)
+	scripts/smoke-test.sh
