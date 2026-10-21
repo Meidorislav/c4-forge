@@ -29,7 +29,10 @@ internal/db/dbtest/     real PostgreSQL databases for integration tests (Testcon
 internal/buildinfo/     version and revision of the binary
 frontend/               web UI: React, TypeScript, Vite; embed*.go embeds the build into the binary
 frontend/src/i18n/      i18next setup and translation catalogs
-docker-compose.yml      local PostgreSQL for development
+Dockerfile              container image: builds UI and binary, runs on distroless as non-root
+docker-compose.yml      the app and PostgreSQL; the database is not published on the host
+docker-compose.dev.yml  development addition: publishes PostgreSQL on the host (used by make db-up)
+scripts/smoke-test.sh   starts the stack from the image and checks that it serves
 docs/                   requirements, ADRs, roadmap
 ```
 
@@ -38,10 +41,12 @@ docs/                   requirements, ADRs, roadmap
 Requires Go (version in `go.mod`), [golangci-lint](https://golangci-lint.run) v2, Docker, and for the frontend Node.js (version in `.nvmrc`) with [pnpm](https://pnpm.io) (version in `frontend/package.json`).
 
 ```bash
-make db-up         # start local PostgreSQL (docker compose), wait until healthy
+make db-up         # start PostgreSQL with its port on the host, wait until healthy
 make run           # run the Go server against it with text logs
 make frontend-dev  # run the UI with hot reload on :5173, proxying the API to the Go server
-make db-down       # stop PostgreSQL, keeping data; make db-reset also deletes the data
+make db-down       # stop the local stack, keeping data; make db-reset also deletes the data
+make up            # build the image and run the whole stack in Docker (make down stops it)
+make smoke-test    # build the image and check that the stack starts and serves
 make build         # build the frontend and the binary with the UI embedded (bin/c4forge)
 make build-api     # build the binary without the UI; no Node.js needed
 make test          # Go tests with the race detector
@@ -54,7 +59,8 @@ Frontend commands run in `frontend/`: `pnpm test`, `pnpm lint`, `pnpm typecheck`
 
 - **Configuration** comes from environment variables with the `C4FORGE_` prefix; see `internal/config`. `C4FORGE_DATABASE_URL` is required; `make run` points it at the local database. Override any variable from the shell, e.g. `C4FORGE_HTTP_ADDR=:8081 make run`, then `make frontend-dev C4FORGE_DEV_API_URL=http://localhost:8081`.
 - **Integration tests** use `dbtest.NewDatabase(t)`, which gives each test its own empty database on a PostgreSQL container started once per test binary. Docker must be running; without it these tests are skipped locally and fail in CI. `C4FORGE_TEST_POSTGRES_IMAGE` selects the image (default `postgres:18`).
-- **CI** (`.github/workflows/ci.yml`) runs Go lint (with and without the `ui` tag), Go tests with `-race` on PostgreSQL 16 and 18, the frontend checks, a build with the UI embedded and a `go mod tidy` check on every pull request. Keep it green.
+- **Ports** can be moved if taken: `C4FORGE_HTTP_PORT` (app in Docker), `C4FORGE_DB_PORT` (PostgreSQL from `make db-up`).
+- **CI** (`.github/workflows/ci.yml`) runs Go lint (with and without the `ui` tag), Go tests with `-race` on PostgreSQL 16 and 18, the frontend checks, a build with the UI embedded, the container image for amd64 and arm64 with the smoke test, and a `go mod tidy` check on every pull request. Keep it green.
 
 ## Frontend
 
@@ -62,6 +68,13 @@ Frontend commands run in `frontend/`: `pnpm test`, `pnpm lint`, `pnpm typecheck`
 - **Routing.** Paths under `/api` are reserved for the API. Every other path that is not a file gets `index.html`, so client-side routes work on reload. Missing files under `/assets/` are 404.
 - **All UI text goes through i18n:** add the key to `frontend/src/i18n/locales/en.ts` and use `t("key")`. Keys are type-checked; no hard-coded strings in components.
 - **No external resources (NF-3).** The Content-Security-Policy only allows the page's own origin, so CDN scripts, remote fonts or calls to other hosts are blocked by the browser. Bundle everything.
+
+## Container image
+
+- **Runtime image is distroless**: no shell or package manager, runs as non-root (uid 65532). Debug with `gcr.io/distroless/static-debian13:debug-nonroot` as the base if a shell is ever needed; never ship it.
+- **Health check** is `c4forge healthcheck`, which exits 0 only when `/readyz` answers 200, so a container is healthy only with a reachable database.
+- **Multi-architecture**: builder stages run on the build platform and cross-compile, so amd64 and arm64 build without emulation. Keep new build steps platform-independent.
+- **docker-compose.yml** is what users run; keep development-only settings in `docker-compose.dev.yml`.
 
 ## Database migrations
 
