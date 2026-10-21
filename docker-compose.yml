@@ -1,21 +1,40 @@
-# Local development environment.
+# Local stack: the c4-forge application and PostgreSQL.
 #
-# For now it runs PostgreSQL only; the application joins once it has a
-# container image (roadmap step 0.4). Use `make db-up` / `make db-down`.
-# The credentials below are for local development only.
+#   docker compose up -d --build   # or: make up
+#
+# The database is reachable only from the app container. For development
+# against a database on the host (`make db-up`, `make run`),
+# docker-compose.dev.yml publishes its port.
+#
+# The app port is bound to localhost and the credentials are for local use only.
+# Running c4-forge for a team on a server is covered by the operations docs
+# (roadmap step 7.1).
 name: c4forge
 
 services:
+  app:
+    build:
+      context: .
+      args:
+        VERSION: ${C4FORGE_VERSION:-dev}
+        COMMIT: ${C4FORGE_COMMIT:-}
+    image: c4forge:local
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      C4FORGE_DATABASE_URL: postgres://c4forge:c4forge@postgres:5432/c4forge?sslmode=disable
+    ports:
+      # Override the host port with C4FORGE_HTTP_PORT if 8080 is taken.
+      - "127.0.0.1:${C4FORGE_HTTP_PORT:-8080}:8080"
+    restart: unless-stopped
+
   postgres:
     image: postgres:18
     environment:
       POSTGRES_USER: c4forge
       POSTGRES_PASSWORD: c4forge
       POSTGRES_DB: c4forge
-    ports:
-      # Bound to localhost only. Override the host port with C4FORGE_DB_PORT
-      # if 5432 is taken.
-      - "127.0.0.1:${C4FORGE_DB_PORT:-5432}:5432"
     volumes:
       # PostgreSQL 18+ images keep data under /var/lib/postgresql.
       - postgres-data:/var/lib/postgresql
@@ -24,6 +43,7 @@ services:
       interval: 2s
       timeout: 3s
       retries: 30
+    restart: unless-stopped
 
 volumes:
   postgres-data:

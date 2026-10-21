@@ -1,0 +1,7 @@
+# Development additions to docker-compose.yml, used by `make db-up`:
+# publishes PostgreSQL on the host so `make run` and database tools can reach
+# it. Override the host port with C4FORGE_DB_PORT if 5432 is taken.
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:${C4FORGE_DB_PORT:-5432}:5432"
