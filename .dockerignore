@@ -1,0 +1,10 @@
+# Only what the image build needs is sent to Docker.
+.git
+.github
+.nvmrc
+bin
+docs
+*.md
+!LICENSE
+frontend/node_modules
+frontend/dist

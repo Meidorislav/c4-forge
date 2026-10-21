@@ -32,9 +32,24 @@ const dbConnectTimeout = 30 * time.Second
 // Run parses args, loads the configuration via getenv and serves until ctx is
 // cancelled. It returns a process exit code. Run touches no process-global
 // state, so it can be tested.
+//
+// "c4forge healthcheck" instead probes an already running server and exits.
 func Run(ctx context.Context, args []string, getenv func(string) string, stdout, stderr io.Writer) int {
+	if len(args) > 0 && args[0] == "healthcheck" {
+		cfg, err := config.Load(getenv)
+		if err != nil {
+			fmt.Fprintf(stderr, "c4forge: invalid configuration:\n%v\n", err)
+			return ExitConfig
+		}
+		return healthcheck(ctx, cfg, stdout, stderr)
+	}
+
 	flags := flag.NewFlagSet("c4forge", flag.ContinueOnError)
 	flags.SetOutput(stderr)
+	flags.Usage = func() {
+		fmt.Fprintf(stderr, "Usage:\n  c4forge [flags]        run the server\n  c4forge healthcheck    exit 0 if the local server is ready\n\nFlags:\n")
+		flags.PrintDefaults()
+	}
 	showVersion := flags.Bool("version", false, "print the version and exit")
 	if err := flags.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
