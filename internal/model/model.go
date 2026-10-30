@@ -284,7 +284,9 @@ func cloneRelationship(relationship Relationship) Relationship {
 }
 
 func cloneStringMap(values map[string]string) map[string]string {
-	if values == nil {
+	// Normalize empty maps like empty tag lists, so JSON omission and reload
+	// preserve the exact immutable snapshot representation.
+	if len(values) == 0 {
 		return nil
 	}
 	result := make(map[string]string, len(values))

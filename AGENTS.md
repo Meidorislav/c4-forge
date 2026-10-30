@@ -25,6 +25,9 @@ internal/config/        configuration from C4FORGE_* environment variables
 internal/server/        HTTP router (chi), middleware, /healthz, /readyz, web UI serving, security headers
 internal/db/            PostgreSQL pool (pgx), startup checks, migrations (goose)
 internal/db/migrations/ SQL migrations, embedded into the binary
+internal/db/queries/    SQL query sources; sqlc.yaml generates internal/db/sqlc/
+internal/model/         immutable C4 model, validation, operations and change history
+internal/modelstore/    transactional model persistence and per-workspace working sets
 internal/db/dbtest/     real PostgreSQL databases for integration tests (Testcontainers)
 internal/buildinfo/     version and revision of the binary
 frontend/               web UI: React, TypeScript, Vite; embed*.go embeds the build into the binary
@@ -53,6 +56,7 @@ make test          # Go tests with the race detector
 make lint          # Go linters
 make fmt           # format Go code
 make tidy          # tidy go.mod/go.sum
+make generate      # regenerate typed PostgreSQL queries with pinned sqlc
 ```
 
 Frontend commands run in `frontend/`: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm format`, `pnpm build`.
@@ -60,7 +64,7 @@ Frontend commands run in `frontend/`: `pnpm test`, `pnpm lint`, `pnpm typecheck`
 - **Configuration** comes from environment variables with the `C4FORGE_` prefix; see `internal/config`. `C4FORGE_DATABASE_URL` is required; `make run` points it at the local database. Override any variable from the shell, e.g. `C4FORGE_HTTP_ADDR=:8081 make run`, then `make frontend-dev C4FORGE_DEV_API_URL=http://localhost:8081`.
 - **Integration tests** use `dbtest.NewDatabase(t)`, which gives each test its own empty database on a PostgreSQL container started once per test binary. Docker must be running; without it these tests are skipped locally and fail in CI. `C4FORGE_TEST_POSTGRES_IMAGE` selects the image (default `postgres:18`).
 - **Ports** can be moved if taken: `C4FORGE_HTTP_PORT` (app in Docker), `C4FORGE_DB_PORT` (PostgreSQL from `make db-up`).
-- **CI** (`.github/workflows/ci.yml`) runs Go lint (with and without the `ui` tag), Go tests with `-race` on PostgreSQL 16 and 18, the frontend checks, a build with the UI embedded, the container image for amd64 and arm64 with the smoke test, and a `go mod tidy` check on every pull request. Keep it green.
+- **CI** (`.github/workflows/ci.yml`) runs Go lint (with and without the `ui` tag), Go tests with `-race` on PostgreSQL 16 and 18, the frontend checks, a build with the UI embedded, the container image for amd64 and arm64 with the smoke test, and a `go mod tidy` check on every pull request. It also checks generated sqlc queries. Keep it green.
 
 ## Frontend
 

@@ -23,7 +23,7 @@ network protocol (roadmap 6.2 and 4.3).
 ## Apply rules
 
 - Operations have `op` (`set` or `delete`), `kind` (`element` or
-  `relationship`) and `id` (UUIDv7). An ID cannot be shared across kinds.
+  `relationship`) and `id` (canonical lowercase hyphenated UUIDv7). An ID cannot be shared across kinds.
 - `set` has a non-empty `fields` object. It creates a missing entity or patches
   an existing one. Unspecified fields stay unchanged. Lists and maps are
   replaced in full. `null` removes an optional field; it cannot remove a

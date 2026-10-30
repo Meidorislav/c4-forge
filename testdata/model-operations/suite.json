@@ -1019,6 +1019,64 @@
           "description": "Unaffected"
         }
       ]
+    },
+    "emptyCollections": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
     }
   },
   "cases": [
@@ -2934,6 +2992,51 @@
         "code": "invalid_reference",
         "field": "parentId"
       }
+    },
+    {
+      "name": "noncanonical UUID is rejected before persistence",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019A2F00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Alias"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": "id"
+      }
+    },
+    {
+      "name": "empty lists and maps clear collection fields",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "tags": [],
+            "properties": {}
+          }
+        }
+      ],
+      "expected": "emptyCollections",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "tags": [],
+            "properties": {}
+          }
+        }
+      ]
     }
   ]
 }
