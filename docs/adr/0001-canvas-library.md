@@ -1,6 +1,6 @@
 # ADR-0001: Canvas library for C4 diagrams and freeform drawing
 
-- **Status:** Proposed — pending the spike described below
+- **Status:** Accepted
 - **Date:** 2026-09-28
 - **Related requirements:** DG-4…DG-18, FR-1…FR-6, CO-1, CO-2, EX-1, NF-3, NF-16
 
@@ -98,7 +98,7 @@ MPL-2.0. File-level copyleft is acceptable as a dependency. SVG-based, good for 
 
 **Not chosen for now.** It gives full control and the best performance ceiling. But we would build viewport, hit testing, selection, text editing, accessibility and interaction details from scratch. That is months of work before any product value, which contradicts incremental delivery (NF-18).
 
-## Decision (proposed)
+## Decision
 
 Use **React Flow (`@xyflow/react`) as the canvas view layer**, with C4 elements and freeform shapes implemented as our own custom node and edge types on a single canvas.
 
@@ -108,7 +108,8 @@ Architectural rules that come with this choice:
 2. **Canvas adapter boundary.** Model, operations, derived views (visible relationships, implied relationships, boundaries), undo/redo and import/export must not import React Flow. Only the canvas adapter does. This keeps option F (own renderer) open if we outgrow React Flow.
 3. **One canvas, two layers.** Freeform shapes are separate node types with their own z-order band (below or above C4 content, per shape). Freeform shapes never create model entities. The only exception is the explicit FR-5 conversion.
 
-The decision becomes **Accepted** only after the spike below passes.
+The decision was accepted after the spike below passed on 2026-10-30. See
+[`../spikes/react-flow.md`](../spikes/react-flow.md) for the results and reproduction steps.
 
 ## Spike (validation)
 

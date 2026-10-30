@@ -27,7 +27,7 @@ Steps are done in order unless noted. The canvas spike (M1) runs in parallel wit
 
 | # | Step | Done when | Covers | Needs | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1.1 | Prototype on React Flow on a throwaway branch; run the nine checks from ADR-0001. | ADR-0001 is marked Accepted, or revised with a new decision. The branch is not merged. | — | ADR-0001 | todo |
+| 1.1 | Prototype on React Flow on a throwaway branch; run the nine checks from ADR-0001. | ADR-0001 is marked Accepted, or revised with a new decision. The branch is not merged. | — | ADR-0001 | done |
 
 ### M2 — Model engine (backend, no network yet)
 
