@@ -1,0 +1,2939 @@
+{
+  "workspaceId": "019a2f00-0000-7000-8000-000000000001",
+  "models": {
+    "empty": {
+      "elements": [],
+      "relationships": []
+    },
+    "base": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "renamed": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "Renamed",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "combined": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "Renamed",
+          "dslId": "system",
+          "description": "New"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "attributes": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "New API",
+          "dslId": "stableApi",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Rust",
+          "tags": [
+            "Service",
+            "Backend"
+          ],
+          "properties": {
+            "new": "value"
+          },
+          "description": "API service",
+          "url": "https://example.test",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "cleared": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "",
+          "tags": null,
+          "properties": null,
+          "description": "",
+          "url": "",
+          "external": false
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "rootCleared": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": false,
+          "parentId": ""
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "relAttributes": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000008",
+          "destinationId": "019a2f00-0000-7000-8000-000000000004",
+          "description": "Calls",
+          "technology": "HTTP",
+          "tags": [
+            "Sync"
+          ],
+          "url": "https://example.test",
+          "properties": {
+            "a": "b"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "relCleared": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "",
+          "technology": "",
+          "tags": null,
+          "url": "",
+          "properties": null
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "created": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        }
+      ]
+    },
+    "noSystem": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "noContainer": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "noComponent": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "noRel": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "typeChanged": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "softwareSystem",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "dslSwapped": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "other",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "system"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "branches": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "type": "container",
+          "name": "API",
+          "dslId": "api",
+          "parentId": "019a2f00-0000-7000-8000-000000000003",
+          "technology": "Go",
+          "tags": [
+            "Backend"
+          ],
+          "properties": {
+            "owner": "team"
+          }
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "type": "component",
+          "name": "Handler",
+          "dslId": "handler",
+          "parentId": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000010",
+          "type": "container",
+          "name": "Worker",
+          "dslId": "worker",
+          "parentId": "019a2f00-0000-7000-8000-000000000003"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000011",
+          "type": "component",
+          "name": "Job",
+          "dslId": "job",
+          "parentId": "019a2f00-0000-7000-8000-000000000010"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000005",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000007",
+          "sourceId": "019a2f00-0000-7000-8000-000000000004",
+          "destinationId": "019a2f00-0000-7000-8000-000000000002"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000012",
+          "sourceId": "019a2f00-0000-7000-8000-000000000005",
+          "destinationId": "019a2f00-0000-7000-8000-000000000011"
+        }
+      ]
+    },
+    "retargeted": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Uses"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    },
+    "recreated": {
+      "elements": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "type": "person",
+          "name": "Architect",
+          "dslId": "architect",
+          "external": true
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "type": "softwareSystem",
+          "name": "System",
+          "dslId": "system",
+          "description": "Original"
+        },
+        {
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "type": "softwareSystem",
+          "name": "Other",
+          "dslId": "other"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "sourceId": "019a2f00-0000-7000-8000-000000000002",
+          "destinationId": "019a2f00-0000-7000-8000-000000000008",
+          "description": "Unaffected"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "name": "field patch preserves unrelated fields",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Renamed"
+          }
+        }
+      ],
+      "expected": "renamed",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Renamed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "different fields compose",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Renamed"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "description": "New"
+          }
+        }
+      ],
+      "expected": "combined",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Renamed"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "description": "New"
+          }
+        }
+      ]
+    },
+    {
+      "name": "same field last operation wins",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "First"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Renamed"
+          }
+        }
+      ],
+      "expected": "renamed",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "First"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Renamed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "set all element attributes replaces lists and maps",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "name": "New API",
+            "dslId": "stableApi",
+            "technology": "Rust",
+            "tags": [
+              "Service",
+              "Backend"
+            ],
+            "properties": {
+              "new": "value"
+            },
+            "description": "API service",
+            "url": "https://example.test",
+            "external": true
+          }
+        }
+      ],
+      "expected": "attributes",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "name": "New API",
+            "dslId": "stableApi",
+            "technology": "Rust",
+            "tags": [
+              "Service",
+              "Backend"
+            ],
+            "properties": {
+              "new": "value"
+            },
+            "description": "API service",
+            "url": "https://example.test",
+            "external": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "null removes optional fields",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "description": null,
+            "technology": null,
+            "tags": null,
+            "url": null,
+            "properties": null,
+            "external": null
+          }
+        }
+      ],
+      "expected": "cleared",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "description": null,
+            "technology": null,
+            "tags": null,
+            "url": null,
+            "properties": null,
+            "external": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "null optional parent and boolean",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "fields": {
+            "parentId": null,
+            "external": null
+          }
+        }
+      ],
+      "expected": "rootCleared",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "fields": {
+            "parentId": null,
+            "external": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "patch relationship endpoints and attributes",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "sourceId": "019a2f00-0000-7000-8000-000000000008",
+            "destinationId": "019a2f00-0000-7000-8000-000000000004",
+            "description": "Calls",
+            "technology": "HTTP",
+            "tags": [
+              "Sync"
+            ],
+            "url": "https://example.test",
+            "properties": {
+              "a": "b"
+            }
+          }
+        }
+      ],
+      "expected": "relAttributes",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "sourceId": "019a2f00-0000-7000-8000-000000000008",
+            "destinationId": "019a2f00-0000-7000-8000-000000000004",
+            "description": "Calls",
+            "technology": "HTTP",
+            "tags": [
+              "Sync"
+            ],
+            "url": "https://example.test",
+            "properties": {
+              "a": "b"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "clear relationship optional fields",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "description": null,
+            "technology": null,
+            "tags": null,
+            "url": null,
+            "properties": null
+          }
+        }
+      ],
+      "expected": "relCleared",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "description": null,
+            "technology": null,
+            "tags": null,
+            "url": null,
+            "properties": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "create batch allows forward references",
+      "initial": "empty",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "fields": {
+            "type": "component",
+            "name": "Handler",
+            "dslId": "handler",
+            "parentId": "019a2f00-0000-7000-8000-000000000004"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "sourceId": "019a2f00-0000-7000-8000-000000000002",
+            "destinationId": "019a2f00-0000-7000-8000-000000000005",
+            "description": "Uses"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "type": "container",
+            "name": "API",
+            "dslId": "api",
+            "parentId": "019a2f00-0000-7000-8000-000000000003",
+            "technology": "Go",
+            "tags": [
+              "Backend"
+            ],
+            "properties": {
+              "owner": "team"
+            }
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "type": "softwareSystem",
+            "name": "System",
+            "dslId": "system",
+            "description": "Original"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "fields": {
+            "type": "person",
+            "name": "Architect",
+            "dslId": "architect",
+            "external": true
+          }
+        }
+      ],
+      "expected": "created",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "fields": {
+            "type": "component",
+            "name": "Handler",
+            "dslId": "handler",
+            "parentId": "019a2f00-0000-7000-8000-000000000004"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "sourceId": "019a2f00-0000-7000-8000-000000000002",
+            "destinationId": "019a2f00-0000-7000-8000-000000000005",
+            "description": "Uses"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "type": "container",
+            "name": "API",
+            "dslId": "api",
+            "parentId": "019a2f00-0000-7000-8000-000000000003",
+            "technology": "Go",
+            "tags": [
+              "Backend"
+            ],
+            "properties": {
+              "owner": "team"
+            }
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "type": "softwareSystem",
+            "name": "System",
+            "dslId": "system",
+            "description": "Original"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "fields": {
+            "type": "person",
+            "name": "Architect",
+            "dslId": "architect",
+            "external": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "delete system cascades through descendants and both relationship directions",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        }
+      ],
+      "expected": "noSystem",
+      "expanded": [
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006"
+        },
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000007"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        }
+      ]
+    },
+    {
+      "name": "delete container cascades to component",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004"
+        }
+      ],
+      "expected": "noContainer",
+      "expanded": [
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006"
+        },
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000007"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004"
+        }
+      ]
+    },
+    {
+      "name": "delete leaf retains parents and unrelated relationships",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        }
+      ],
+      "expected": "noComponent",
+      "expanded": [
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        }
+      ]
+    },
+    {
+      "name": "delete relationship retains all elements",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006"
+        }
+      ],
+      "expected": "noRel",
+      "expanded": [
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006"
+        }
+      ]
+    },
+    {
+      "name": "delete missing entity is harmless",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000099"
+        },
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000099"
+        }
+      ],
+      "expected": "base",
+      "expanded": [
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000099"
+        },
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000099"
+        }
+      ]
+    },
+    {
+      "name": "empty batch preserves model",
+      "initial": "base",
+      "operations": [],
+      "expected": "base",
+      "expanded": []
+    },
+    {
+      "name": "repeated deletes are harmless",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        }
+      ],
+      "expected": "noComponent",
+      "expanded": [
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        }
+      ]
+    },
+    {
+      "name": "set type uses registered element type",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "fields": {
+            "type": "softwareSystem"
+          }
+        }
+      ],
+      "expected": "typeChanged",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "fields": {
+            "type": "softwareSystem"
+          }
+        }
+      ]
+    },
+    {
+      "name": "unknown operation",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "append",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": ""
+      }
+    },
+    {
+      "name": "unknown kind",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "delete",
+          "kind": "view",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        }
+      ],
+      "error": {
+        "code": "unknown_entity",
+        "field": ""
+      }
+    },
+    {
+      "name": "invalid entity ID",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "not-a-uuid"
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": "id"
+      }
+    },
+    {
+      "name": "unknown field",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "bogus": 1
+          }
+        }
+      ],
+      "error": {
+        "code": "unknown_field",
+        "field": "bogus"
+      }
+    },
+    {
+      "name": "identity cannot be patched",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "id": "019a2f00-0000-7000-8000-000000000099"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": "id"
+      }
+    },
+    {
+      "name": "empty set",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {}
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": ""
+      }
+    },
+    {
+      "name": "delete rejects fields",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {}
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": ""
+      }
+    },
+    {
+      "name": "null required type",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "type": null
+          }
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": "type"
+      }
+    },
+    {
+      "name": "null required name",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": null
+          }
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": "name"
+      }
+    },
+    {
+      "name": "null required dslId",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "dslId": null
+          }
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": "dslId"
+      }
+    },
+    {
+      "name": "null required sourceId",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "sourceId": null
+          }
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": "sourceId"
+      }
+    },
+    {
+      "name": "null required destinationId",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "destinationId": null
+          }
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": "destinationId"
+      }
+    },
+    {
+      "name": "string type",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "name": 42
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_type",
+        "field": "name"
+      }
+    },
+    {
+      "name": "boolean type",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "external": "true"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_type",
+        "field": "external"
+      }
+    },
+    {
+      "name": "list type",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "tags": "Backend"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_type",
+        "field": "tags"
+      }
+    },
+    {
+      "name": "map type",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "properties": []
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_type",
+        "field": "properties"
+      }
+    },
+    {
+      "name": "list nested null",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "tags": [
+              null
+            ]
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_type",
+        "field": "tags"
+      }
+    },
+    {
+      "name": "map nested null",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "properties": {
+              "a": null
+            }
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_type",
+        "field": "properties"
+      }
+    },
+    {
+      "name": "map nested number",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "properties": {
+              "a": 1
+            }
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_type",
+        "field": "properties"
+      }
+    },
+    {
+      "name": "duplicate tags",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "tags": [
+              "A",
+              "A"
+            ]
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": "tags"
+      }
+    },
+    {
+      "name": "empty tag",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "tags": [
+              " "
+            ]
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": "tags"
+      }
+    },
+    {
+      "name": "empty property key",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "properties": {
+              " ": "x"
+            }
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": "properties"
+      }
+    },
+    {
+      "name": "unknown element type",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "type": "database"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": "type"
+      }
+    },
+    {
+      "name": "invalid parent UUID",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "parentId": "wrong"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": "parentId"
+      }
+    },
+    {
+      "name": "missing parent",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "parentId": "019a2f00-0000-7000-8000-000000000099"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_reference",
+        "field": "parentId"
+      }
+    },
+    {
+      "name": "wrong parent type",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "parentId": "019a2f00-0000-7000-8000-000000000002"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_hierarchy",
+        "field": "parentId"
+      }
+    },
+    {
+      "name": "null container parent",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "parentId": null
+          }
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": "parentId"
+      }
+    },
+    {
+      "name": "invalid technology on root",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "technology": "Go"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_value",
+        "field": "technology"
+      }
+    },
+    {
+      "name": "missing endpoint",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "destinationId": "019a2f00-0000-7000-8000-000000000099"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_reference",
+        "field": "destinationId"
+      }
+    },
+    {
+      "name": "duplicate DSL ID",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "fields": {
+            "dslId": "system"
+          }
+        }
+      ],
+      "error": {
+        "code": "duplicate_dsl_id",
+        "field": "dslId"
+      }
+    },
+    {
+      "name": "cross kind ID collision",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "fields": {
+            "sourceId": "019a2f00-0000-7000-8000-000000000002",
+            "destinationId": "019a2f00-0000-7000-8000-000000000003"
+          }
+        }
+      ],
+      "error": {
+        "code": "duplicate_id",
+        "field": "id"
+      }
+    },
+    {
+      "name": "incomplete new entity",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000099",
+          "fields": {
+            "name": "Incomplete"
+          }
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": "dslId"
+      }
+    },
+    {
+      "name": "failure after cascading deletion",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000002",
+          "fields": {
+            "name": null
+          }
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": "name"
+      }
+    },
+    {
+      "name": "new reference to deleted element",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        },
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000009",
+          "fields": {
+            "destinationId": "019a2f00-0000-7000-8000-000000000005"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_reference",
+        "field": "destinationId"
+      }
+    },
+    {
+      "name": "cycle is rejected",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "parentId": "019a2f00-0000-7000-8000-000000000005"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_hierarchy",
+        "field": "parentId"
+      }
+    },
+    {
+      "name": "validate uniqueness after entire batch",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "dslId": "other"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "fields": {
+            "dslId": "system"
+          }
+        }
+      ],
+      "expected": "dslSwapped",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "dslId": "other"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000008",
+          "fields": {
+            "dslId": "system"
+          }
+        }
+      ]
+    },
+    {
+      "name": "cascade sibling branches and internal relationship once",
+      "initial": "branches",
+      "operations": [
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        }
+      ],
+      "expected": "noSystem",
+      "expanded": [
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006"
+        },
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000007"
+        },
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000012"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000011"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000010"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        }
+      ]
+    },
+    {
+      "name": "retarget before deletion preserves relationship",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "destinationId": "019a2f00-0000-7000-8000-000000000008"
+          }
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        }
+      ],
+      "expected": "retargeted",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "destinationId": "019a2f00-0000-7000-8000-000000000008"
+          }
+        },
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000007"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        }
+      ]
+    },
+    {
+      "name": "delete then recreate same ID starts with fresh fields",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "type": "softwareSystem",
+            "name": "System",
+            "dslId": "system",
+            "description": "Original"
+          }
+        }
+      ],
+      "expected": "recreated",
+      "expanded": [
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006"
+        },
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000007"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003"
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "type": "softwareSystem",
+            "name": "System",
+            "dslId": "system",
+            "description": "Original"
+          }
+        }
+      ]
+    },
+    {
+      "name": "blank required name",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": " "
+          }
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": "name"
+      }
+    },
+    {
+      "name": "blank required dslId",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "dslId": " "
+          }
+        }
+      ],
+      "error": {
+        "code": "required",
+        "field": "dslId"
+      }
+    },
+    {
+      "name": "element collides with relationship ID",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000006",
+          "fields": {
+            "type": "person",
+            "name": "Collision",
+            "dslId": "collision"
+          }
+        }
+      ],
+      "error": {
+        "code": "duplicate_id",
+        "field": "id"
+      }
+    },
+    {
+      "name": "delete temporary cycle terminates",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "parentId": "019a2f00-0000-7000-8000-000000000005"
+          }
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004"
+        }
+      ],
+      "expected": "noContainer",
+      "expanded": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "parentId": "019a2f00-0000-7000-8000-000000000005"
+          }
+        },
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000006"
+        },
+        {
+          "op": "delete",
+          "kind": "relationship",
+          "id": "019a2f00-0000-7000-8000-000000000007"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005"
+        },
+        {
+          "op": "delete",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004"
+        }
+      ]
+    },
+    {
+      "name": "multiple invalid hierarchies select stable first error",
+      "initial": "base",
+      "operations": [
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000003",
+          "fields": {
+            "name": "Must roll back"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000004",
+          "fields": {
+            "parentId": "019a2f00-0000-7000-8000-000000000099"
+          }
+        },
+        {
+          "op": "set",
+          "kind": "element",
+          "id": "019a2f00-0000-7000-8000-000000000005",
+          "fields": {
+            "parentId": "019a2f00-0000-7000-8000-000000000099"
+          }
+        }
+      ],
+      "error": {
+        "code": "invalid_reference",
+        "field": "parentId"
+      }
+    }
+  ]
+}
