@@ -58,7 +58,8 @@ func New(workspaceID ID, elements []Element, relationships []Relationship) (*Mod
 		result.elements[input.ID] = cloneElement(input)
 	}
 
-	for _, element := range result.elements {
+	// Stable error selection also matters when a batch violates several hierarchy rules.
+	for _, element := range result.Elements() {
 		if err := validateHierarchy(element, result.elements); err != nil {
 			return nil, err
 		}

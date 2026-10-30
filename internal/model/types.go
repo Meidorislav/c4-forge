@@ -33,28 +33,28 @@ func (t ElementType) Valid() bool {
 // Element is a model-backed C4 element. ParentID is required only for
 // containers and components.
 type Element struct {
-	ID          ID
-	Type        ElementType
-	ParentID    ID
-	Name        string
-	Description string
-	Technology  string
-	Tags        []string
-	URL         string
-	Properties  map[string]string
-	External    bool
-	DSLID       string
+	ID          ID                `json:"id"`
+	Type        ElementType       `json:"type"`
+	ParentID    ID                `json:"parentId,omitempty"`
+	Name        string            `json:"name"`
+	Description string            `json:"description,omitempty"`
+	Technology  string            `json:"technology,omitempty"`
+	Tags        []string          `json:"tags,omitempty"`
+	URL         string            `json:"url,omitempty"`
+	Properties  map[string]string `json:"properties,omitempty"`
+	External    bool              `json:"external,omitempty"`
+	DSLID       string            `json:"dslId"`
 }
 
 // Relationship is a directed link between two model elements. Multiple
 // relationships may have the same source and destination (MD-5).
 type Relationship struct {
-	ID            ID
-	SourceID      ID
-	DestinationID ID
-	Description   string
-	Technology    string
-	Tags          []string
-	URL           string
-	Properties    map[string]string
+	ID            ID                `json:"id"`
+	SourceID      ID                `json:"sourceId"`
+	DestinationID ID                `json:"destinationId"`
+	Description   string            `json:"description,omitempty"`
+	Technology    string            `json:"technology,omitempty"`
+	Tags          []string          `json:"tags,omitempty"`
+	URL           string            `json:"url,omitempty"`
+	Properties    map[string]string `json:"properties,omitempty"`
 }

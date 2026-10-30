@@ -34,7 +34,7 @@ Steps are done in order unless noted. The canvas spike (M1) runs in parallel wit
 | # | Step | Done when | Covers | Needs | Status |
 | --- | --- | --- | --- | --- | --- |
 | 2.1 | Metamodel and field registry for elements and relationships; hierarchy and reference validation on an in-memory model. | Unit tests cover valid and invalid models. | MD-1…MD-5, NF-9 | ADR-0003 | done |
-| 2.2 | Operations: `set`/`delete`, atomic batches, cascading deletes. Test cases are written as shared JSON fixtures, so the TypeScript client can run them too. | Fixture suite passes in Go. | MD-9, CO-3 | 2.1 | todo |
+| 2.2 | Operations: `set`/`delete`, atomic batches, cascading deletes. Test cases are written as shared JSON fixtures, so the TypeScript client can run them too. | Fixture suite passes in Go. | MD-9, CO-3 | 2.1 | done |
 | 2.3 | Persistence: element/relationship tables, operation log, per-workspace sequence, transactional write path, loading a workspace into memory. | Integration tests: apply → restart → load gives the same model; failed commit leaves memory untouched. | NF-8, HI-1 (log only) | 0.2, 2.2 | todo |
 | 2.4 | Views, placements and freeform shapes: tables, field registry entries, operations, cascades. | Fixture and integration tests extended to views and shapes. | DG-1, DG-4, FR-1 (data) | 2.3 | todo |
 
