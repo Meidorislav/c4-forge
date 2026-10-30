@@ -166,3 +166,78 @@ func TestApplyRejectsMalformedRawJSON(t *testing.T) {
 		}
 	}
 }
+
+func TestApplyWithChangesRecordsPreviousValues(t *testing.T) {
+	elements, relationships := validFixture()
+	original, err := New(testWorkspaceID, elements, relationships)
+	if err != nil {
+		t.Fatal(err)
+	}
+	operations := []Operation{
+		{Op: OperationSet, Kind: EntityElement, ID: testContainerID, Fields: map[FieldName]json.RawMessage{FieldNameValue: json.RawMessage(`"First"`), FieldProperties: json.RawMessage(`{"owner":"team"}`)}},
+		{Op: OperationSet, Kind: EntityElement, ID: testContainerID, Fields: map[FieldName]json.RawMessage{FieldNameValue: json.RawMessage(`"Second"`), FieldProperties: json.RawMessage(`null`)}},
+		{Op: OperationDelete, Kind: EntityElement, ID: testContainerID},
+		{Op: OperationDelete, Kind: EntityElement, ID: testMissingID},
+	}
+	_, changes, err := original.ApplyWithChanges(operations)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(changes) != 5 {
+		t.Fatalf("changes=%d, want 5", len(changes))
+	}
+	if !changes[0].Existed || string(changes[0].Before[FieldNameValue]) != `"Web application"` || string(changes[0].Before[FieldProperties]) != "null" {
+		t.Fatalf("first patch history: %+v", changes[0])
+	}
+	if string(changes[1].Before[FieldNameValue]) != `"First"` || string(changes[1].Before[FieldProperties]) != `{"owner":"team"}` {
+		t.Fatalf("second patch history: %+v", changes[1])
+	}
+	if changes[2].ID != testComponentID || !changes[2].Existed || string(changes[2].Before[FieldID]) != `"`+string(testComponentID)+`"` || string(changes[2].Before[FieldParentID]) != `"`+string(testContainerID)+`"` {
+		t.Fatalf("cascade history: %+v", changes[2])
+	}
+	if changes[3].ID != testContainerID || string(changes[3].Before[FieldNameValue]) != `"Second"` || string(changes[3].Before[FieldProperties]) != "null" {
+		t.Fatalf("delete history: %+v", changes[3])
+	}
+	if changes[4].Existed {
+		t.Fatal("missing delete recorded as existing entity")
+	}
+	changes[0].Before[FieldNameValue][1] = 'X'
+	container, _ := original.Element(testContainerID)
+	if container.Name != "Web application" {
+		t.Fatal("history aliases snapshot")
+	}
+	empty, err := New(testWorkspaceID, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, created, err := empty.ApplyWithChanges([]Operation{{Op: OperationSet, Kind: EntityElement, ID: testPersonID, Fields: map[FieldName]json.RawMessage{FieldType: json.RawMessage(`"person"`), FieldNameValue: json.RawMessage(`"Architect"`), FieldDSLID: json.RawMessage(`"architect"`)}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if created[0].Existed || string(created[0].Before[FieldNameValue]) != "null" {
+		t.Fatal("creation has incorrect previous values")
+	}
+}
+
+func TestHistoryCapturesCascadingRelationshipDeletes(t *testing.T) {
+	elements, relationships := validFixture()
+	original, err := New(testWorkspaceID, elements, relationships)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, changes, err := original.ApplyWithChanges([]Operation{{Op: OperationDelete, Kind: EntityElement, ID: testSystemID}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(changes) != 5 {
+		t.Fatalf("cascade history length=%d, want 5", len(changes))
+	}
+	for _, change := range changes {
+		if !change.Existed || string(change.Before[FieldID]) != `"`+string(change.ID)+`"` {
+			t.Fatalf("missing deleted entity data: %+v", change)
+		}
+	}
+	if changes[0].ID != testRelationshipID || string(changes[0].Before[FieldDescription]) != `"Creates diagrams with"` || string(changes[0].Before[FieldDestinationID]) != `"`+string(testSystemID)+`"` {
+		t.Fatalf("relationship history: %+v", changes[0])
+	}
+}

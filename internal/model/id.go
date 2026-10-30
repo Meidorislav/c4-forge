@@ -18,7 +18,7 @@ func ParseID(value string) (ID, error) {
 	return id, nil
 }
 
-// Validate checks that the identifier is an RFC 9562 UUIDv7.
+// Validate checks that the identifier is a canonical lowercase RFC 9562 UUIDv7.
 func (id ID) Validate() error {
 	parsed, err := uuid.Parse(string(id))
 	if err != nil {
@@ -29,6 +29,11 @@ func (id ID) Validate() error {
 	}
 	if parsed.Variant() != uuid.RFC4122 {
 		return fmt.Errorf("UUID variant is %s, want RFC 4122", parsed.Variant())
+	}
+	// PostgreSQL stores UUIDs as bytes and returns canonical text. Accepting
+	// several spellings here would let map keys differ from persisted identity.
+	if string(id) != parsed.String() {
+		return fmt.Errorf("UUID must use canonical lowercase hyphenated form")
 	}
 	return nil
 }

@@ -129,6 +129,19 @@ jobs:
       - name: Smoke test
         run: scripts/smoke-test.sh
 
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Check generated PostgreSQL queries
+        run: |
+          make generate
+          git diff --exit-code -- internal/db/sqlc
+
   tidy:
     runs-on: ubuntu-latest
     timeout-minutes: 5

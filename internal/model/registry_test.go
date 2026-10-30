@@ -101,7 +101,14 @@ func TestParseID(t *testing.T) {
 	if err != nil || got != testPersonID {
 		t.Fatalf("ParseID() = %q, %v", got, err)
 	}
-	for _, value := range []string{"not-a-uuid", "550e8400-e29b-41d4-a716-446655440000"} {
+	for _, value := range []string{
+		"019A2F00-0000-7000-8000-000000000002",
+		"{019a2f00-0000-7000-8000-000000000002}",
+		"urn:uuid:019a2f00-0000-7000-8000-000000000002",
+		"019a2f00000070008000000000000002",
+		"not-a-uuid",
+		"550e8400-e29b-41d4-a716-446655440000",
+	} {
 		if _, err := ParseID(value); err == nil {
 			t.Errorf("ParseID(%q) succeeded", value)
 		}

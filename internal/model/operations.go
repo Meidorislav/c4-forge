@@ -24,11 +24,35 @@ type Operation struct {
 	Fields map[FieldName]json.RawMessage `json:"fields,omitempty"`
 }
 
-// Apply applies operations in order to a private candidate and validates its
-// final state. A failure returns neither a candidate nor expanded operations.
-// The receiver is unchanged even on success, so persistence can commit first.
-// Expanded operations include deterministic cascades for replay by clients.
+// Change records an expanded operation and the values it replaced (ADR-0003).
+// Existed distinguishes creation from an existing entity with optional fields
+// absent. Before contains patched fields for set, or all fields for delete;
+// absent values are JSON null. Changes own their maps and JSON bytes.
+type Change struct {
+	Operation
+	Existed bool                          `json:"existed"`
+	Before  map[FieldName]json.RawMessage `json:"before"`
+}
+
+// Apply applies a batch and returns its expanded operations. See
+// ApplyWithChanges for history, atomicity and persistence semantics.
 func (m *Model) Apply(operations []Operation) (*Model, []Operation, error) {
+	result, changes, err := m.ApplyWithChanges(operations)
+	if err != nil {
+		return nil, nil, err
+	}
+	expanded := make([]Operation, 0, len(changes))
+	for _, change := range changes {
+		expanded = append(expanded, change.Operation)
+	}
+	return result, expanded, nil
+}
+
+// ApplyWithChanges applies operations in order to a private candidate and
+// validates its final state. Failure returns no candidate or changes. The
+// receiver is unchanged, even on success: storage must commit before publishing
+// the candidate. Cascades and their previous values have deterministic order.
+func (m *Model) ApplyWithChanges(operations []Operation) (*Model, []Change, error) {
 	candidate := &Model{
 		workspaceID:   m.workspaceID,
 		elements:      make(map[ID]Element, len(m.elements)),
@@ -40,7 +64,7 @@ func (m *Model) Apply(operations []Operation) (*Model, []Operation, error) {
 	for id, relationship := range m.relationships {
 		candidate.relationships[id] = cloneRelationship(relationship)
 	}
-	expanded := make([]Operation, 0, len(operations))
+	expanded := make([]Change, 0, len(operations))
 	for i, operation := range operations {
 		applied, err := candidate.applyOperation(operation)
 		if err != nil {
@@ -55,7 +79,7 @@ func (m *Model) Apply(operations []Operation) (*Model, []Operation, error) {
 	return result, expanded, nil
 }
 
-func (m *Model) applyOperation(op Operation) ([]Operation, error) {
+func (m *Model) applyOperation(op Operation) ([]Change, error) {
 	if op.Kind != EntityElement && op.Kind != EntityRelationship {
 		return nil, validationError(ErrorUnknownEntity, op.Kind, op.ID, "", "entity kind is not supported")
 	}
@@ -70,10 +94,11 @@ func (m *Model) applyOperation(op Operation) ([]Operation, error) {
 		if err := validatePatch(op); err != nil {
 			return nil, err
 		}
+		change := m.changeBefore(op)
 		if err := m.set(op); err != nil {
 			return nil, err
 		}
-		return []Operation{cloneOperation(op)}, nil
+		return []Change{change}, nil
 	case OperationDelete:
 		if op.Fields != nil {
 			return nil, validationError(ErrorInvalidValue, op.Kind, op.ID, "", "delete must not contain fields")
@@ -206,11 +231,12 @@ func mergePatch[T any](current T, patch map[FieldName]json.RawMessage) (T, error
 	return next, err
 }
 
-func (m *Model) deleteEntity(op Operation) []Operation {
+func (m *Model) deleteEntity(op Operation) []Change {
 	if op.Kind == EntityRelationship {
 		// Missing deletes are retained as harmless no-ops, including during replay.
+		change := m.changeBefore(op)
 		delete(m.relationships, op.ID)
-		return []Operation{op}
+		return []Change{change}
 	}
 	// Traverse a sorted child list and mark before recursing: even a temporarily
 	// cyclic candidate must not hang before final batch validation.
@@ -232,16 +258,16 @@ func (m *Model) deleteEntity(op Operation) []Operation {
 		order = append(order, id)
 	}
 	visit(op.ID)
-	expanded := make([]Operation, 0)
+	expanded := make([]Change, 0)
 	for _, relationship := range m.Relationships() {
 		if deleted[relationship.SourceID] || deleted[relationship.DestinationID] {
+			expanded = append(expanded, m.changeBefore(Operation{Op: OperationDelete, Kind: EntityRelationship, ID: relationship.ID}))
 			delete(m.relationships, relationship.ID)
-			expanded = append(expanded, Operation{Op: OperationDelete, Kind: EntityRelationship, ID: relationship.ID})
 		}
 	}
 	for _, id := range order {
+		expanded = append(expanded, m.changeBefore(Operation{Op: OperationDelete, Kind: EntityElement, ID: id}))
 		delete(m.elements, id)
-		expanded = append(expanded, Operation{Op: OperationDelete, Kind: EntityElement, ID: id})
 	}
 	return expanded
 }
@@ -255,4 +281,38 @@ func cloneOperation(op Operation) Operation {
 		op.Fields = fields
 	}
 	return op
+}
+
+// Entity fields are structs containing only JSON-compatible values; marshaling
+// cannot fail. Reading the candidate before each operation preserves intermediate
+// values when a batch touches the same field more than once.
+func (m *Model) changeBefore(op Operation) Change {
+	change := Change{Operation: cloneOperation(op), Before: make(map[FieldName]json.RawMessage)}
+	var entity any
+	switch op.Kind {
+	case EntityElement:
+		value, ok := m.elements[op.ID]
+		change.Existed, entity = ok, value
+	case EntityRelationship:
+		value, ok := m.relationships[op.ID]
+		change.Existed, entity = ok, value
+	}
+	values := make(map[FieldName]json.RawMessage)
+	if change.Existed {
+		data, _ := json.Marshal(entity)
+		_ = json.Unmarshal(data, &values)
+	}
+	for _, field := range DefaultRegistry().Fields(op.Kind) {
+		if op.Op == OperationSet {
+			if _, patched := op.Fields[field.Name]; !patched {
+				continue
+			}
+		}
+		previous, ok := values[field.Name]
+		if !ok {
+			previous = json.RawMessage("null")
+		}
+		change.Before[field.Name] = previous
+	}
+	return change
 }
