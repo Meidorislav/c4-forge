@@ -46,6 +46,20 @@ func (q *Queries) DeleteElement(ctx context.Context, arg DeleteElementParams) er
 	return err
 }
 
+const deletePlacement = `-- name: DeletePlacement :exec
+DELETE FROM placements WHERE workspace_id=$1 AND id=$2
+`
+
+type DeletePlacementParams struct {
+	WorkspaceID uuid.UUID
+	ID          uuid.UUID
+}
+
+func (q *Queries) DeletePlacement(ctx context.Context, arg DeletePlacementParams) error {
+	_, err := q.db.Exec(ctx, deletePlacement, arg.WorkspaceID, arg.ID)
+	return err
+}
+
 const deleteRelationship = `-- name: DeleteRelationship :exec
 DELETE FROM relationships WHERE workspace_id = $1 AND id = $2
 `
@@ -57,6 +71,34 @@ type DeleteRelationshipParams struct {
 
 func (q *Queries) DeleteRelationship(ctx context.Context, arg DeleteRelationshipParams) error {
 	_, err := q.db.Exec(ctx, deleteRelationship, arg.WorkspaceID, arg.ID)
+	return err
+}
+
+const deleteShape = `-- name: DeleteShape :exec
+DELETE FROM shapes WHERE workspace_id=$1 AND id=$2
+`
+
+type DeleteShapeParams struct {
+	WorkspaceID uuid.UUID
+	ID          uuid.UUID
+}
+
+func (q *Queries) DeleteShape(ctx context.Context, arg DeleteShapeParams) error {
+	_, err := q.db.Exec(ctx, deleteShape, arg.WorkspaceID, arg.ID)
+	return err
+}
+
+const deleteView = `-- name: DeleteView :exec
+DELETE FROM views WHERE workspace_id=$1 AND id=$2
+`
+
+type DeleteViewParams struct {
+	WorkspaceID uuid.UUID
+	ID          uuid.UUID
+}
+
+func (q *Queries) DeleteView(ctx context.Context, arg DeleteViewParams) error {
+	_, err := q.db.Exec(ctx, deleteView, arg.WorkspaceID, arg.ID)
 	return err
 }
 
@@ -116,6 +158,39 @@ func (q *Queries) ListElements(ctx context.Context, workspaceID uuid.UUID) ([]El
 	return items, nil
 }
 
+const listPlacements = `-- name: ListPlacements :many
+SELECT workspace_id, id, view_id, element_id, x, y, width, height FROM placements WHERE workspace_id = $1 ORDER BY id
+`
+
+func (q *Queries) ListPlacements(ctx context.Context, workspaceID uuid.UUID) ([]Placement, error) {
+	rows, err := q.db.Query(ctx, listPlacements, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Placement{}
+	for rows.Next() {
+		var i Placement
+		if err := rows.Scan(
+			&i.WorkspaceID,
+			&i.ID,
+			&i.ViewID,
+			&i.ElementID,
+			&i.X,
+			&i.Y,
+			&i.Width,
+			&i.Height,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listRelationships = `-- name: ListRelationships :many
 SELECT workspace_id, id, source_id, destination_id, attrs FROM relationships WHERE workspace_id = $1 ORDER BY id
 `
@@ -134,6 +209,67 @@ func (q *Queries) ListRelationships(ctx context.Context, workspaceID uuid.UUID) 
 			&i.ID,
 			&i.SourceID,
 			&i.DestinationID,
+			&i.Attrs,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listShapes = `-- name: ListShapes :many
+SELECT workspace_id, id, view_id, type, attrs FROM shapes WHERE workspace_id = $1 ORDER BY id
+`
+
+func (q *Queries) ListShapes(ctx context.Context, workspaceID uuid.UUID) ([]Shape, error) {
+	rows, err := q.db.Query(ctx, listShapes, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Shape{}
+	for rows.Next() {
+		var i Shape
+		if err := rows.Scan(
+			&i.WorkspaceID,
+			&i.ID,
+			&i.ViewID,
+			&i.Type,
+			&i.Attrs,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listViews = `-- name: ListViews :many
+SELECT workspace_id, id, type, key, scope_id, attrs FROM views WHERE workspace_id = $1 ORDER BY id
+`
+
+func (q *Queries) ListViews(ctx context.Context, workspaceID uuid.UUID) ([]View, error) {
+	rows, err := q.db.Query(ctx, listViews, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []View{}
+	for rows.Next() {
+		var i View
+		if err := rows.Scan(
+			&i.WorkspaceID,
+			&i.ID,
+			&i.Type,
+			&i.Key,
+			&i.ScopeID,
 			&i.Attrs,
 		); err != nil {
 			return nil, err
@@ -188,6 +324,37 @@ func (q *Queries) PutElement(ctx context.Context, arg PutElementParams) error {
 	return err
 }
 
+const putPlacement = `-- name: PutPlacement :exec
+INSERT INTO placements (workspace_id,id,view_id,element_id,x,y,width,height) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+ON CONFLICT ON CONSTRAINT placements_pkey DO UPDATE
+SET view_id=EXCLUDED.view_id,element_id=EXCLUDED.element_id,x=EXCLUDED.x,y=EXCLUDED.y,width=EXCLUDED.width,height=EXCLUDED.height
+`
+
+type PutPlacementParams struct {
+	WorkspaceID uuid.UUID
+	ID          uuid.UUID
+	ViewID      uuid.UUID
+	ElementID   uuid.UUID
+	X           float64
+	Y           float64
+	Width       pgtype.Float8
+	Height      pgtype.Float8
+}
+
+func (q *Queries) PutPlacement(ctx context.Context, arg PutPlacementParams) error {
+	_, err := q.db.Exec(ctx, putPlacement,
+		arg.WorkspaceID,
+		arg.ID,
+		arg.ViewID,
+		arg.ElementID,
+		arg.X,
+		arg.Y,
+		arg.Width,
+		arg.Height,
+	)
+	return err
+}
+
 const putRelationship = `-- name: PutRelationship :exec
 INSERT INTO relationships (workspace_id, id, source_id, destination_id, attrs)
 VALUES ($1, $2, $3, $4, $5)
@@ -210,6 +377,58 @@ func (q *Queries) PutRelationship(ctx context.Context, arg PutRelationshipParams
 		arg.ID,
 		arg.SourceID,
 		arg.DestinationID,
+		arg.Attrs,
+	)
+	return err
+}
+
+const putShape = `-- name: PutShape :exec
+INSERT INTO shapes (workspace_id,id,view_id,type,attrs) VALUES ($1,$2,$3,$4,$5)
+ON CONFLICT ON CONSTRAINT shapes_pkey DO UPDATE
+SET view_id=EXCLUDED.view_id,type=EXCLUDED.type,attrs=EXCLUDED.attrs
+`
+
+type PutShapeParams struct {
+	WorkspaceID uuid.UUID
+	ID          uuid.UUID
+	ViewID      uuid.UUID
+	Type        string
+	Attrs       []byte
+}
+
+func (q *Queries) PutShape(ctx context.Context, arg PutShapeParams) error {
+	_, err := q.db.Exec(ctx, putShape,
+		arg.WorkspaceID,
+		arg.ID,
+		arg.ViewID,
+		arg.Type,
+		arg.Attrs,
+	)
+	return err
+}
+
+const putView = `-- name: PutView :exec
+INSERT INTO views (workspace_id,id,type,key,scope_id,attrs) VALUES ($1,$2,$3,$4,$5,$6)
+ON CONFLICT ON CONSTRAINT views_pkey DO UPDATE
+SET type=EXCLUDED.type,key=EXCLUDED.key,scope_id=EXCLUDED.scope_id,attrs=EXCLUDED.attrs
+`
+
+type PutViewParams struct {
+	WorkspaceID uuid.UUID
+	ID          uuid.UUID
+	Type        string
+	Key         string
+	ScopeID     pgtype.UUID
+	Attrs       []byte
+}
+
+func (q *Queries) PutView(ctx context.Context, arg PutViewParams) error {
+	_, err := q.db.Exec(ctx, putView,
+		arg.WorkspaceID,
+		arg.ID,
+		arg.Type,
+		arg.Key,
+		arg.ScopeID,
 		arg.Attrs,
 	)
 	return err

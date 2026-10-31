@@ -57,12 +57,24 @@ func (m *Model) ApplyWithChanges(operations []Operation) (*Model, []Change, erro
 		workspaceID:   m.workspaceID,
 		elements:      make(map[ID]Element, len(m.elements)),
 		relationships: make(map[ID]Relationship, len(m.relationships)),
+		views:         make(map[ID]View, len(m.views)),
+		placements:    make(map[ID]Placement, len(m.placements)),
+		shapes:        make(map[ID]Shape, len(m.shapes)),
 	}
 	for id, element := range m.elements {
 		candidate.elements[id] = cloneElement(element)
 	}
 	for id, relationship := range m.relationships {
 		candidate.relationships[id] = cloneRelationship(relationship)
+	}
+	for id, v := range m.views {
+		candidate.views[id] = v
+	}
+	for id, p := range m.placements {
+		candidate.placements[id] = clonePlacement(p)
+	}
+	for id, s := range m.shapes {
+		candidate.shapes[id] = cloneShape(s)
 	}
 	expanded := make([]Change, 0, len(operations))
 	for i, operation := range operations {
@@ -72,7 +84,7 @@ func (m *Model) ApplyWithChanges(operations []Operation) (*Model, []Change, erro
 		}
 		expanded = append(expanded, applied...)
 	}
-	result, err := New(candidate.workspaceID, candidate.Elements(), candidate.Relationships())
+	result, err := NewWithPresentation(candidate.workspaceID, candidate.Elements(), candidate.Relationships(), candidate.Views(), candidate.Placements(), candidate.Shapes())
 	if err != nil {
 		return nil, nil, fmt.Errorf("batch result: %w", err)
 	}
@@ -80,7 +92,7 @@ func (m *Model) ApplyWithChanges(operations []Operation) (*Model, []Change, erro
 }
 
 func (m *Model) applyOperation(op Operation) ([]Change, error) {
-	if op.Kind != EntityElement && op.Kind != EntityRelationship {
+	if op.Kind != EntityElement && op.Kind != EntityRelationship && op.Kind != EntityView && op.Kind != EntityPlacement && op.Kind != EntityShape {
 		return nil, validationError(ErrorUnknownEntity, op.Kind, op.ID, "", "entity kind is not supported")
 	}
 	if err := op.ID.Validate(); err != nil {
@@ -179,11 +191,14 @@ func patchValue(def FieldDefinition, raw json.RawMessage) (any, error) {
 }
 
 func (m *Model) set(op Operation) error {
+	kinds := []EntityKind{EntityElement, EntityRelationship, EntityView, EntityPlacement, EntityShape}
+	for _, kind := range kinds {
+		if kind != op.Kind && m.contains(kind, op.ID) {
+			return validationError(ErrorDuplicateID, op.Kind, op.ID, FieldID, "identifier is used by %s", kind)
+		}
+	}
 	switch op.Kind {
 	case EntityElement:
-		if _, exists := m.relationships[op.ID]; exists {
-			return validationError(ErrorDuplicateID, op.Kind, op.ID, FieldID, "identifier is used by a relationship")
-		}
 		current := m.elements[op.ID]
 		current.ID = op.ID
 		next, err := mergePatch(current, op.Fields)
@@ -192,9 +207,6 @@ func (m *Model) set(op Operation) error {
 		}
 		m.elements[op.ID] = next
 	case EntityRelationship:
-		if _, exists := m.elements[op.ID]; exists {
-			return validationError(ErrorDuplicateID, op.Kind, op.ID, FieldID, "identifier is used by an element")
-		}
 		current := m.relationships[op.ID]
 		current.ID = op.ID
 		next, err := mergePatch(current, op.Fields)
@@ -202,8 +214,53 @@ func (m *Model) set(op Operation) error {
 			return err
 		}
 		m.relationships[op.ID] = next
+	case EntityView:
+		current := m.views[op.ID]
+		current.ID = op.ID
+		next, err := mergePatch(current, op.Fields)
+		if err != nil {
+			return err
+		}
+		m.views[op.ID] = next
+	case EntityPlacement:
+		current := m.placements[op.ID]
+		current.ID = op.ID
+		next, err := mergePatch(current, op.Fields)
+		if err != nil {
+			return err
+		}
+		m.placements[op.ID] = next
+	case EntityShape:
+		current := m.shapes[op.ID]
+		current.ID = op.ID
+		next, err := mergePatch(current, op.Fields)
+		if err != nil {
+			return err
+		}
+		m.shapes[op.ID] = next
 	}
 	return nil
+}
+
+func (m *Model) contains(kind EntityKind, id ID) bool {
+	switch kind {
+	case EntityElement:
+		_, ok := m.elements[id]
+		return ok
+	case EntityRelationship:
+		_, ok := m.relationships[id]
+		return ok
+	case EntityView:
+		_, ok := m.views[id]
+		return ok
+	case EntityPlacement:
+		_, ok := m.placements[id]
+		return ok
+	case EntityShape:
+		_, ok := m.shapes[id]
+		return ok
+	}
+	return false
 }
 
 func mergePatch[T any](current T, patch map[FieldName]json.RawMessage) (T, error) {
@@ -232,6 +289,18 @@ func mergePatch[T any](current T, patch map[FieldName]json.RawMessage) (T, error
 }
 
 func (m *Model) deleteEntity(op Operation) []Change {
+	if op.Kind == EntityPlacement || op.Kind == EntityShape {
+		change := m.changeBefore(op)
+		if op.Kind == EntityPlacement {
+			delete(m.placements, op.ID)
+		} else {
+			delete(m.shapes, op.ID)
+		}
+		return []Change{change}
+	}
+	if op.Kind == EntityView {
+		return m.deleteView(op.ID)
+	}
 	if op.Kind == EntityRelationship {
 		// Missing deletes are retained as harmless no-ops, including during replay.
 		change := m.changeBefore(op)
@@ -259,6 +328,17 @@ func (m *Model) deleteEntity(op Operation) []Change {
 	}
 	visit(op.ID)
 	expanded := make([]Change, 0)
+	// Remove scoped views and their contents before deleting elements.
+	for _, view := range m.Views() {
+		if deleted[view.ScopeID] {
+			expanded = append(expanded, m.deleteView(view.ID)...)
+		}
+	}
+	for _, placement := range m.Placements() {
+		if deleted[placement.ElementID] {
+			expanded = append(expanded, m.deleteEntity(Operation{Op: OperationDelete, Kind: EntityPlacement, ID: placement.ID})...)
+		}
+	}
 	for _, relationship := range m.Relationships() {
 		if deleted[relationship.SourceID] || deleted[relationship.DestinationID] {
 			expanded = append(expanded, m.changeBefore(Operation{Op: OperationDelete, Kind: EntityRelationship, ID: relationship.ID}))
@@ -270,6 +350,24 @@ func (m *Model) deleteEntity(op Operation) []Change {
 		delete(m.elements, id)
 	}
 	return expanded
+}
+
+func (m *Model) deleteView(id ID) []Change {
+	changes := make([]Change, 0)
+	for _, shape := range m.Shapes() {
+		if shape.ViewID == id {
+			changes = append(changes, m.deleteEntity(Operation{Op: OperationDelete, Kind: EntityShape, ID: shape.ID})...)
+		}
+	}
+	for _, p := range m.Placements() {
+		if p.ViewID == id {
+			changes = append(changes, m.deleteEntity(Operation{Op: OperationDelete, Kind: EntityPlacement, ID: p.ID})...)
+		}
+	}
+	op := Operation{Op: OperationDelete, Kind: EntityView, ID: id}
+	changes = append(changes, m.changeBefore(op))
+	delete(m.views, id)
+	return changes
 }
 
 func cloneOperation(op Operation) Operation {
@@ -295,6 +393,15 @@ func (m *Model) changeBefore(op Operation) Change {
 		change.Existed, entity = ok, value
 	case EntityRelationship:
 		value, ok := m.relationships[op.ID]
+		change.Existed, entity = ok, value
+	case EntityView:
+		value, ok := m.views[op.ID]
+		change.Existed, entity = ok, value
+	case EntityPlacement:
+		value, ok := m.placements[op.ID]
+		change.Existed, entity = ok, value
+	case EntityShape:
+		value, ok := m.shapes[op.ID]
 		change.Existed, entity = ok, value
 	}
 	values := make(map[FieldName]json.RawMessage)

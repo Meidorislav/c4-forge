@@ -75,7 +75,19 @@ func (s *Store) Open(ctx context.Context, id model.ID) (*Workspace, error) {
 	if err != nil {
 		return nil, fmt.Errorf("load relationships: %w", err)
 	}
-	snapshot, err := decodeModel(id, elements, relationships)
+	views, err := q.ListViews(ctx, uid(id))
+	if err != nil {
+		return nil, fmt.Errorf("load views: %w", err)
+	}
+	placements, err := q.ListPlacements(ctx, uid(id))
+	if err != nil {
+		return nil, fmt.Errorf("load placements: %w", err)
+	}
+	shapes, err := q.ListShapes(ctx, uid(id))
+	if err != nil {
+		return nil, fmt.Errorf("load shapes: %w", err)
+	}
+	snapshot, err := decodeModel(id, elements, relationships, views, placements, shapes)
 	if err != nil {
 		return nil, fmt.Errorf("decode model: %w", err)
 	}
@@ -206,6 +218,74 @@ func writeModel(ctx context.Context, q *sqlc.Queries, previous, next *model.Mode
 			return err
 		}
 	}
+	for _, view := range next.Views() {
+		old, exists := previous.View(view.ID)
+		if exists && reflect.DeepEqual(old, view) {
+			continue
+		}
+		attrs, err := entityAttrs(model.EntityView, view)
+		if err != nil {
+			return err
+		}
+		scope := pgtype.UUID{}
+		if view.ScopeID != "" {
+			scope = pgtype.UUID{Bytes: uid(view.ScopeID), Valid: true}
+		}
+		if err := q.PutView(ctx, sqlc.PutViewParams{WorkspaceID: workspaceID, ID: uid(view.ID), Type: view.Type, Key: view.Key, ScopeID: scope, Attrs: attrs}); err != nil {
+			return err
+		}
+	}
+	for _, placement := range next.Placements() {
+		old, exists := previous.Placement(placement.ID)
+		if exists && reflect.DeepEqual(old, placement) {
+			continue
+		}
+		width, height := pgtype.Float8{}, pgtype.Float8{}
+		if placement.Width != nil {
+			width = pgtype.Float8{Float64: *placement.Width, Valid: true}
+		}
+		if placement.Height != nil {
+			height = pgtype.Float8{Float64: *placement.Height, Valid: true}
+		}
+		if err := q.PutPlacement(ctx, sqlc.PutPlacementParams{WorkspaceID: workspaceID, ID: uid(placement.ID), ViewID: uid(placement.ViewID), ElementID: uid(placement.ElementID), X: *placement.X, Y: *placement.Y, Width: width, Height: height}); err != nil {
+			return err
+		}
+	}
+	for _, shape := range next.Shapes() {
+		old, exists := previous.Shape(shape.ID)
+		if exists && reflect.DeepEqual(old, shape) {
+			continue
+		}
+		attrs, err := entityAttrs(model.EntityShape, shape)
+		if err != nil {
+			return err
+		}
+		if err := q.PutShape(ctx, sqlc.PutShapeParams{WorkspaceID: workspaceID, ID: uid(shape.ID), ViewID: uid(shape.ViewID), Type: shape.Type, Attrs: attrs}); err != nil {
+			return err
+		}
+	}
+	for _, shape := range previous.Shapes() {
+		if _, exists := next.Shape(shape.ID); !exists {
+			if err := q.DeleteShape(ctx, sqlc.DeleteShapeParams{WorkspaceID: workspaceID, ID: uid(shape.ID)}); err != nil {
+				return err
+			}
+		}
+	}
+	for _, placement := range previous.Placements() {
+		if _, exists := next.Placement(placement.ID); !exists {
+			if err := q.DeletePlacement(ctx, sqlc.DeletePlacementParams{WorkspaceID: workspaceID, ID: uid(placement.ID)}); err != nil {
+				return err
+			}
+		}
+	}
+	for _, view := range previous.Views() {
+		if _, exists := next.View(view.ID); !exists {
+			if err := q.DeleteView(ctx, sqlc.DeleteViewParams{WorkspaceID: workspaceID, ID: uid(view.ID)}); err != nil {
+				return err
+			}
+		}
+	}
+
 	for _, relationship := range previous.Relationships() {
 		if _, exists := next.Relationship(relationship.ID); !exists {
 			if err := q.DeleteRelationship(ctx, sqlc.DeleteRelationshipParams{WorkspaceID: workspaceID, ID: uid(relationship.ID)}); err != nil {
@@ -244,7 +324,7 @@ func entityAttrs(kind model.EntityKind, entity any) ([]byte, error) {
 	return json.Marshal(attrs)
 }
 
-func decodeModel(id model.ID, elementRows []sqlc.Element, relationshipRows []sqlc.Relationship) (*model.Model, error) {
+func decodeModel(id model.ID, elementRows []sqlc.Element, relationshipRows []sqlc.Relationship, viewRows []sqlc.View, placementRows []sqlc.Placement, shapeRows []sqlc.Shape) (*model.Model, error) {
 	elements := make([]model.Element, 0, len(elementRows))
 	for _, row := range elementRows {
 		var element model.Element
@@ -269,7 +349,43 @@ func decodeModel(id model.ID, elementRows []sqlc.Element, relationshipRows []sql
 		relationship.SourceID, relationship.DestinationID = model.ID(row.SourceID.String()), model.ID(row.DestinationID.String())
 		relationships = append(relationships, relationship)
 	}
-	return model.New(id, elements, relationships)
+	views := make([]model.View, 0, len(viewRows))
+	for _, row := range viewRows {
+		var view model.View
+		if err := json.Unmarshal(row.Attrs, &view); err != nil {
+			return nil, err
+		}
+		view.ID = model.ID(row.ID.String())
+		view.Type = row.Type
+		view.Key = row.Key
+		if row.ScopeID.Valid {
+			view.ScopeID = model.ID(uuid.UUID(row.ScopeID.Bytes).String())
+		}
+		views = append(views, view)
+	}
+	placements := make([]model.Placement, 0, len(placementRows))
+	for _, row := range placementRows {
+		p := model.Placement{ID: model.ID(row.ID.String()), ViewID: model.ID(row.ViewID.String()), ElementID: model.ID(row.ElementID.String()), X: &row.X, Y: &row.Y}
+		if row.Width.Valid {
+			p.Width = &row.Width.Float64
+		}
+		if row.Height.Valid {
+			p.Height = &row.Height.Float64
+		}
+		placements = append(placements, p)
+	}
+	shapes := make([]model.Shape, 0, len(shapeRows))
+	for _, row := range shapeRows {
+		var shape model.Shape
+		if err := json.Unmarshal(row.Attrs, &shape); err != nil {
+			return nil, err
+		}
+		shape.ID = model.ID(row.ID.String())
+		shape.ViewID = model.ID(row.ViewID.String())
+		shape.Type = row.Type
+		shapes = append(shapes, shape)
+	}
+	return model.NewWithPresentation(id, elements, relationships, views, placements, shapes)
 }
 
 // Callers validate IDs before conversion, including model.New on load.

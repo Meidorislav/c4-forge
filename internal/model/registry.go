@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 )
@@ -10,6 +11,19 @@ import (
 type FieldName string
 
 const (
+	FieldKey           FieldName = "key"
+	FieldTitle         FieldName = "title"
+	FieldScopeID       FieldName = "scopeId"
+	FieldViewID        FieldName = "viewId"
+	FieldElementID     FieldName = "elementId"
+	FieldX             FieldName = "x"
+	FieldY             FieldName = "y"
+	FieldWidth         FieldName = "width"
+	FieldHeight        FieldName = "height"
+	FieldGeometry      FieldName = "geometry"
+	FieldStyle         FieldName = "style"
+	FieldText          FieldName = "text"
+	FieldZ             FieldName = "z"
 	FieldID            FieldName = "id"
 	FieldType          FieldName = "type"
 	FieldParentID      FieldName = "parentId"
@@ -37,6 +51,8 @@ const (
 type ValueKind string
 
 const (
+	ValueNumber      ValueKind = "number"
+	ValueObject      ValueKind = "object"
 	ValueUUID        ValueKind = "uuid"
 	ValueString      ValueKind = "string"
 	ValueBool        ValueKind = "bool"
@@ -60,7 +76,7 @@ type Registry struct {
 	fields map[EntityKind]map[FieldName]FieldDefinition
 }
 
-// DefaultRegistry returns the field registry for roadmap step 2.1.
+// DefaultRegistry returns the field registry for workspace entities.
 func DefaultRegistry() Registry {
 	return Registry{fields: map[EntityKind]map[FieldName]FieldDefinition{
 		EntityElement: definitions(
@@ -75,6 +91,32 @@ func DefaultRegistry() Registry {
 			FieldDefinition{FieldURL, StorageAttrs, ValueString, false, ""},
 			FieldDefinition{FieldProperties, StorageAttrs, ValueStringMap, false, ""},
 			FieldDefinition{FieldExternal, StorageAttrs, ValueBool, false, ""},
+		),
+		EntityView: definitions(
+			FieldDefinition{FieldID, StorageColumn, ValueUUID, true, ""},
+			FieldDefinition{FieldType, StorageColumn, ValueString, true, ""},
+			FieldDefinition{FieldKey, StorageColumn, ValueString, true, ""},
+			FieldDefinition{FieldScopeID, StorageColumn, ValueUUID, false, EntityElement},
+			FieldDefinition{FieldTitle, StorageAttrs, ValueString, false, ""},
+			FieldDefinition{FieldDescription, StorageAttrs, ValueString, false, ""},
+		),
+		EntityPlacement: definitions(
+			FieldDefinition{FieldID, StorageColumn, ValueUUID, true, ""},
+			FieldDefinition{FieldViewID, StorageColumn, ValueUUID, true, EntityView},
+			FieldDefinition{FieldElementID, StorageColumn, ValueUUID, true, EntityElement},
+			FieldDefinition{FieldX, StorageColumn, ValueNumber, true, ""},
+			FieldDefinition{FieldY, StorageColumn, ValueNumber, true, ""},
+			FieldDefinition{FieldWidth, StorageColumn, ValueNumber, false, ""},
+			FieldDefinition{FieldHeight, StorageColumn, ValueNumber, false, ""},
+		),
+		EntityShape: definitions(
+			FieldDefinition{FieldID, StorageColumn, ValueUUID, true, ""},
+			FieldDefinition{FieldViewID, StorageColumn, ValueUUID, true, EntityView},
+			FieldDefinition{FieldType, StorageColumn, ValueString, true, ""},
+			FieldDefinition{FieldGeometry, StorageAttrs, ValueObject, true, ""},
+			FieldDefinition{FieldStyle, StorageAttrs, ValueObject, false, ""},
+			FieldDefinition{FieldText, StorageAttrs, ValueString, false, ""},
+			FieldDefinition{FieldZ, StorageAttrs, ValueNumber, false, ""},
 		),
 		EntityRelationship: definitions(
 			FieldDefinition{FieldID, StorageColumn, ValueUUID, true, ""},
@@ -136,6 +178,18 @@ func (r Registry) ValidateValue(entity EntityKind, field FieldName, value any) e
 	}
 
 	switch definition.Value {
+	case ValueNumber:
+		number, ok := value.(float64)
+		if !ok {
+			return wrongValueType(entity, definition, value)
+		}
+		if math.IsNaN(number) || math.IsInf(number, 0) {
+			return validationError(ErrorInvalidValue, entity, "", field, "number must be finite")
+		}
+	case ValueObject:
+		if _, ok := value.(map[string]any); !ok {
+			return wrongValueType(entity, definition, value)
+		}
 	case ValueUUID:
 		return validateUUIDValue(entity, definition, value)
 	case ValueString:
