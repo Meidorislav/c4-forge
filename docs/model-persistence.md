@@ -38,8 +38,8 @@ users. Authentication and the user foreign key arrive in M3/M4.
 
 ## Entity storage
 
-Elements and relationships have typed identity/reference columns and a JSONB
-`attrs` object. The field registry selects which fields go into `attrs`.
+Elements, relationships, views and shapes have typed identity/reference columns and a JSONB
+`attrs` object. Placements store references, coordinates and optional dimensions in typed columns. The field registry selects which fields go into `attrs`.
 Updates write the final validated candidate rather than executing transient
 states from the input batch. Lists/maps retain the engine's replacement rules;
 null removal is reflected in the new `attrs` object.
@@ -47,7 +47,9 @@ null removal is reflected in the new `attrs` object.
 Reference constraints include `workspace_id`, so a parent or relationship endpoint
 cannot point into another workspace. Deleting an element cascades through its
 children and all relationships touching them. Deleting a workspace cascades to
-its model and history. Direct database cascade tests use the same fixtures as
+its model, presentation and history. View deletion removes its shapes and
+placements; deleting a scoped element also deletes the view. Direct database
+cascade tests use the same fixtures as
 the engine, without applying its expanded deletes first.
 
 Foreign keys and DSL identifier uniqueness are deferred until commit. That allows

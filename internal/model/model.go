@@ -10,11 +10,19 @@ type Model struct {
 	workspaceID   ID
 	elements      map[ID]Element
 	relationships map[ID]Relationship
+	views         map[ID]View
+	placements    map[ID]Placement
+	shapes        map[ID]Shape
 }
 
 // New validates and copies a complete workspace model. Input order does not
 // matter: references are checked after all entities have been indexed.
 func New(workspaceID ID, elements []Element, relationships []Relationship) (*Model, error) {
+	return NewWithPresentation(workspaceID, elements, relationships, nil, nil, nil)
+}
+
+// NewWithPresentation validates and copies all workspace entities.
+func NewWithPresentation(workspaceID ID, elements []Element, relationships []Relationship, views []View, placements []Placement, shapes []Shape) (*Model, error) {
 	if err := workspaceID.Validate(); err != nil {
 		return nil, validationError(ErrorInvalidValue, EntityWorkspace, workspaceID, FieldID, "%v", err)
 	}
@@ -24,6 +32,9 @@ func New(workspaceID ID, elements []Element, relationships []Relationship) (*Mod
 		workspaceID:   workspaceID,
 		elements:      make(map[ID]Element, len(elements)),
 		relationships: make(map[ID]Relationship, len(relationships)),
+		views:         make(map[ID]View, len(views)),
+		placements:    make(map[ID]Placement, len(placements)),
+		shapes:        make(map[ID]Shape, len(shapes)),
 	}
 	allIDs := make(map[ID]EntityKind, len(elements)+len(relationships))
 	dslIDs := make(map[string]ID, len(elements))
@@ -103,6 +114,9 @@ func New(workspaceID ID, elements []Element, relationships []Relationship) (*Mod
 		result.relationships[input.ID] = cloneRelationship(input)
 	}
 
+	if err := result.addPresentation(allIDs, views, placements, shapes); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 

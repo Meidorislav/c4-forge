@@ -30,6 +30,9 @@ const (
 type fixtureModel struct {
 	Elements      []model.Element      `json:"elements"`
 	Relationships []model.Relationship `json:"relationships"`
+	Views         []model.View         `json:"views"`
+	Placements    []model.Placement    `json:"placements"`
+	Shapes        []model.Shape        `json:"shapes"`
 }
 
 type fixtureSuite struct {
@@ -130,7 +133,7 @@ func readSuite(t *testing.T) fixtureSuite {
 
 func snapshot(t *testing.T, id model.ID, data fixtureModel) *model.Model {
 	t.Helper()
-	result, err := model.New(id, data.Elements, data.Relationships)
+	result, err := model.NewWithPresentation(id, data.Elements, data.Relationships, data.Views, data.Placements, data.Shapes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,6 +160,15 @@ func seedOperations(t *testing.T, data fixtureModel) []model.Operation {
 	}
 	for _, relationship := range data.Relationships {
 		add(model.EntityRelationship, relationship.ID, relationship)
+	}
+	for _, view := range data.Views {
+		add(model.EntityView, view.ID, view)
+	}
+	for _, placement := range data.Placements {
+		add(model.EntityPlacement, placement.ID, placement)
+	}
+	for _, shape := range data.Shapes {
+		add(model.EntityShape, shape.ID, shape)
 	}
 	return result
 }
@@ -441,8 +453,15 @@ func TestDatabaseCascadesMatchEngine(t *testing.T) {
 			}
 			operation := fixture.Operations[0]
 			query := "DELETE FROM elements WHERE workspace_id=$1 AND id=$2"
-			if operation.Kind == model.EntityRelationship {
+			switch operation.Kind {
+			case model.EntityRelationship:
 				query = "DELETE FROM relationships WHERE workspace_id=$1 AND id=$2"
+			case model.EntityView:
+				query = "DELETE FROM views WHERE workspace_id=$1 AND id=$2"
+			case model.EntityPlacement:
+				query = "DELETE FROM placements WHERE workspace_id=$1 AND id=$2"
+			case model.EntityShape:
+				query = "DELETE FROM shapes WHERE workspace_id=$1 AND id=$2"
 			}
 			if _, err := pool.Exec(t.Context(), query, uid(workspaceID), uid(operation.ID)); err != nil {
 				t.Fatal(err)
@@ -528,4 +547,59 @@ func TestRowWriteFailureRollsBackHistoryAndSequence(t *testing.T) {
 	if err := pool.QueryRow(t.Context(), "SELECT count(*) FROM operations").Scan(&count); err != nil || count != 0 {
 		t.Fatalf("history rollback: %d, %v", count, err)
 	}
+}
+
+func TestPresentationDatabaseConstraints(t *testing.T) {
+	store, pool, _ := testStore(t)
+	suite := readSuite(t)
+	workspace := openEmpty(t, store, workspaceID)
+	if _, err := workspace.Apply(t.Context(), batch(t, seedOperations(t, suite.Models["scene"])...)); err != nil {
+		t.Fatal(err)
+	}
+	other := newID(t)
+	openEmpty(t, store, other)
+	viewID := model.ID("019a2f00-0000-7000-8000-000000000020")
+	placementElement := model.ID("019a2f00-0000-7000-8000-000000000003")
+	tests := []struct {
+		name, query string
+		args        []any
+	}{
+		{"duplicate view key", `INSERT INTO views(workspace_id,id,type,key) VALUES ($1,$2,'systemLandscape','landscape')`, []any{uid(workspaceID), uid(newID(t))}},
+		{"duplicate placement", `INSERT INTO placements(workspace_id,id,view_id,element_id,x,y) VALUES ($1,$2,$3,$4,0,0)`, []any{uid(workspaceID), uid(newID(t)), uid(viewID), uid(placementElement)}},
+		{"cross workspace view", `INSERT INTO shapes(workspace_id,id,view_id,type,attrs) VALUES ($1,$2,$3,'text','{"geometry":{}}')`, []any{uid(other), uid(newID(t)), uid(viewID)}},
+		{"missing geometry", `INSERT INTO shapes(workspace_id,id,view_id,type,attrs) VALUES ($1,$2,$3,'text','{}')`, []any{uid(workspaceID), uid(newID(t)), uid(viewID)}},
+		{"invalid geometry", `INSERT INTO shapes(workspace_id,id,view_id,type,attrs) VALUES ($1,$2,$3,'text','{"geometry":[] }')`, []any{uid(workspaceID), uid(newID(t)), uid(viewID)}},
+		{"nonfinite coordinate", `INSERT INTO placements(workspace_id,id,view_id,element_id,x,y) VALUES ($1,$2,$3,$4,'NaN',0)`, []any{uid(workspaceID), uid(newID(t)), uid(viewID), uid(placementElement)}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, err := pool.Exec(t.Context(), tc.query, tc.args...); err == nil {
+				t.Fatal("database accepted invalid presentation row")
+			}
+		})
+	}
+}
+
+func TestShapeGeometryPreservesDecimalPrecision(t *testing.T) {
+	store, _, _ := testStore(t)
+	workspace := openEmpty(t, store, workspaceID)
+	viewID := newID(t)
+	shapeID := newID(t)
+	ops := []model.Operation{
+		{Op: model.OperationSet, Kind: model.EntityView, ID: viewID, Fields: map[model.FieldName]json.RawMessage{model.FieldType: json.RawMessage(`"systemLandscape"`), model.FieldKey: json.RawMessage(`"landscape"`)}},
+		{Op: model.OperationSet, Kind: model.EntityShape, ID: shapeID, Fields: map[model.FieldName]json.RawMessage{model.FieldViewID: json.RawMessage(`"` + string(viewID) + `"`), model.FieldType: json.RawMessage(`"rectangle"`), model.FieldGeometry: json.RawMessage(`{"large":9007199254740993,"small":1e-7}`)}},
+	}
+	if _, err := workspace.Apply(t.Context(), batch(t, ops...)); err != nil {
+		t.Fatal(err)
+	}
+	before, _ := workspace.Snapshot()
+	shape, _ := before.Shape(shapeID)
+	if !strings.Contains(string(shape.Geometry), "9007199254740993") {
+		t.Fatalf("geometry lost precision: %s", shape.Geometry)
+	}
+	reopened, err := store.Open(t.Context(), workspaceID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertSnapshot(t, reopened, before, 1)
 }

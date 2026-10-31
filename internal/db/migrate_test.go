@@ -120,3 +120,36 @@ func TestMigrateConcurrently(t *testing.T) {
 		t.Errorf("schema version = %d, want %d", got, want)
 	}
 }
+
+func TestPresentationMigrationPreservesExistingWorkspace(t *testing.T) {
+	pool := connectTest(t, dbtest.NewDatabase(t))
+	provider, err := newMigrationProvider(pool)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := provider.UpTo(t.Context(), 2); err != nil {
+		t.Fatal(err)
+	}
+	if err := provider.Close(); err != nil {
+		t.Fatal(err)
+	}
+	const workspace = "019a2f00-0000-7000-8000-000000000001"
+	const element = "019a2f00-0000-7000-8000-000000000002"
+	if _, err := pool.Exec(t.Context(), `INSERT INTO workspaces(id,seq) VALUES ($1,7)`, workspace); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(t.Context(), `INSERT INTO elements(workspace_id,id,type,name,dsl_id,attrs) VALUES($1,$2,'softwareSystem','Existing','existing','{"description":"preserve"}')`, workspace, element); err != nil {
+		t.Fatal(err)
+	}
+	if err := Migrate(t.Context(), pool, slog.New(slog.DiscardHandler)); err != nil {
+		t.Fatal(err)
+	}
+	var seq int64
+	var description string
+	if err := pool.QueryRow(t.Context(), `SELECT w.seq,e.attrs->>'description' FROM workspaces w JOIN elements e ON e.workspace_id=w.id WHERE w.id=$1`, workspace).Scan(&seq, &description); err != nil {
+		t.Fatal(err)
+	}
+	if seq != 7 || description != "preserve" {
+		t.Fatalf("existing data changed: seq=%d description=%q", seq, description)
+	}
+}

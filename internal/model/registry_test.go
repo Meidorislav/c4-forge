@@ -64,7 +64,7 @@ func TestRegistryValidatesFieldValues(t *testing.T) {
 		{"valid UUIDv7", EntityElement, FieldID, testPersonID, ""},
 		{"optional reference omitted", EntityElement, FieldParentID, ID(""), ""},
 		{"valid tags", EntityElement, FieldTags, []string{"A", "B"}, ""},
-		{"unknown entity", "shape", FieldID, testPersonID, ErrorUnknownEntity},
+		{"unknown entity", "unsupported", FieldID, testPersonID, ErrorUnknownEntity},
 		{"unknown field", EntityElement, "shape", "box", ErrorUnknownField},
 		{"required nil", EntityElement, FieldID, nil, ErrorRequired},
 		{"wrong runtime type", EntityElement, FieldExternal, "yes", ErrorInvalidType},

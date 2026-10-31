@@ -28,12 +28,40 @@ type Operation struct {
 	Ops         []byte
 }
 
+type Placement struct {
+	WorkspaceID uuid.UUID
+	ID          uuid.UUID
+	ViewID      uuid.UUID
+	ElementID   uuid.UUID
+	X           float64
+	Y           float64
+	Width       pgtype.Float8
+	Height      pgtype.Float8
+}
+
 type Relationship struct {
 	WorkspaceID   uuid.UUID
 	ID            uuid.UUID
 	SourceID      uuid.UUID
 	DestinationID uuid.UUID
 	Attrs         []byte
+}
+
+type Shape struct {
+	WorkspaceID uuid.UUID
+	ID          uuid.UUID
+	ViewID      uuid.UUID
+	Type        string
+	Attrs       []byte
+}
+
+type View struct {
+	WorkspaceID uuid.UUID
+	ID          uuid.UUID
+	Type        string
+	Key         string
+	ScopeID     pgtype.UUID
+	Attrs       []byte
 }
 
 type Workspace struct {

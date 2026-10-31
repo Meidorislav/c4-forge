@@ -11,6 +11,9 @@ import (
 type fixtureModel struct {
 	Elements      []Element      `json:"elements"`
 	Relationships []Relationship `json:"relationships"`
+	Views         []View         `json:"views"`
+	Placements    []Placement    `json:"placements"`
+	Shapes        []Shape        `json:"shapes"`
 }
 
 type operationFixture struct {
@@ -47,7 +50,7 @@ func TestOperationFixtures(t *testing.T) {
 		if !ok {
 			t.Fatalf("unknown fixture model %q", name)
 		}
-		result, err := New(suite.WorkspaceID, data.Elements, data.Relationships)
+		result, err := NewWithPresentation(suite.WorkspaceID, data.Elements, data.Relationships, data.Views, data.Placements, data.Shapes)
 		if err != nil {
 			t.Fatalf("fixture model %q: %v", name, err)
 		}
@@ -239,5 +242,34 @@ func TestHistoryCapturesCascadingRelationshipDeletes(t *testing.T) {
 	}
 	if changes[0].ID != testRelationshipID || string(changes[0].Before[FieldDescription]) != `"Creates diagrams with"` || string(changes[0].Before[FieldDestinationID]) != `"`+string(testSystemID)+`"` {
 		t.Fatalf("relationship history: %+v", changes[0])
+	}
+}
+
+func TestPresentationSnapshotOwnsMutableValues(t *testing.T) {
+	x, y, z := 1.0, 2.0, 3.0
+	view := View{ID: testMissingID, Type: "systemLandscape", Key: "landscape"}
+	placement := Placement{ID: testContainerID, ViewID: view.ID, ElementID: testPersonID, X: &x, Y: &y}
+	shape := Shape{ID: testSecondRelID, ViewID: view.ID, Type: "sticky", Geometry: json.RawMessage(`{"x":1,"nested":{"text":"hi"}}`), Style: json.RawMessage(`{"fill":"red"}`), Z: &z}
+	original, err := NewWithPresentation(testWorkspaceID, []Element{{ID: testPersonID, Type: ElementPerson, Name: "Person", DSLID: "person"}}, nil, []View{view}, []Placement{placement}, []Shape{shape})
+	if err != nil {
+		t.Fatal(err)
+	}
+	x = 42
+	shape.Geometry[0] = '['
+	shape.Style[0] = '['
+	z = 42
+	gotPlacement, _ := original.Placement(placement.ID)
+	gotShape, _ := original.Shape(shape.ID)
+	if *gotPlacement.X != 1 || *gotShape.Z != 3 || string(gotShape.Geometry) != `{"nested":{"text":"hi"},"x":1}` {
+		t.Fatal("snapshot aliases input")
+	}
+	*gotPlacement.X = 55
+	gotShape.Geometry[0] = '['
+	gotShape.Style[0] = '['
+	*gotShape.Z = 55
+	again, _ := original.Placement(placement.ID)
+	againShape, _ := original.Shape(shape.ID)
+	if *again.X != 1 || *againShape.Z != 3 || againShape.Geometry[0] != '{' || againShape.Style[0] != '{' {
+		t.Fatal("accessor aliases snapshot")
 	}
 }

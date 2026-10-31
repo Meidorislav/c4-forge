@@ -39,3 +39,36 @@ DELETE FROM relationships WHERE workspace_id = $1 AND id = $2;
 -- name: InsertOperation :exec
 INSERT INTO operations (workspace_id, seq, batch_id, actor_id, ops)
 VALUES ($1, $2, $3, $4, $5);
+
+-- name: ListViews :many
+SELECT * FROM views WHERE workspace_id = $1 ORDER BY id;
+
+-- name: ListPlacements :many
+SELECT * FROM placements WHERE workspace_id = $1 ORDER BY id;
+
+-- name: ListShapes :many
+SELECT * FROM shapes WHERE workspace_id = $1 ORDER BY id;
+
+-- name: PutView :exec
+INSERT INTO views (workspace_id,id,type,key,scope_id,attrs) VALUES ($1,$2,$3,$4,$5,$6)
+ON CONFLICT ON CONSTRAINT views_pkey DO UPDATE
+SET type=EXCLUDED.type,key=EXCLUDED.key,scope_id=EXCLUDED.scope_id,attrs=EXCLUDED.attrs;
+
+-- name: PutPlacement :exec
+INSERT INTO placements (workspace_id,id,view_id,element_id,x,y,width,height) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+ON CONFLICT ON CONSTRAINT placements_pkey DO UPDATE
+SET view_id=EXCLUDED.view_id,element_id=EXCLUDED.element_id,x=EXCLUDED.x,y=EXCLUDED.y,width=EXCLUDED.width,height=EXCLUDED.height;
+
+-- name: PutShape :exec
+INSERT INTO shapes (workspace_id,id,view_id,type,attrs) VALUES ($1,$2,$3,$4,$5)
+ON CONFLICT ON CONSTRAINT shapes_pkey DO UPDATE
+SET view_id=EXCLUDED.view_id,type=EXCLUDED.type,attrs=EXCLUDED.attrs;
+
+-- name: DeleteView :exec
+DELETE FROM views WHERE workspace_id=$1 AND id=$2;
+
+-- name: DeletePlacement :exec
+DELETE FROM placements WHERE workspace_id=$1 AND id=$2;
+
+-- name: DeleteShape :exec
+DELETE FROM shapes WHERE workspace_id=$1 AND id=$2;
