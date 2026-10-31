@@ -231,7 +231,7 @@ Compatibility properties:
 
 ### 6.3. Security
 
-- **NF-10.** All endpoints (including the realtime channel) require authentication and check workspace permissions.
+- **NF-10.** Application endpoints, including the realtime channel, require authentication. Workspace access also requires the appropriate workspace permission; instance administration requires the appropriate instance role. The only unauthenticated surfaces are the minimal first-user setup and login pages, their required assets and pre-authentication operations, and minimal `/healthz` and `/readyz` responses.
 - **NF-11.** Passwords use a strong hash (argon2id/bcrypt); sessions use httpOnly cookies; CSRF protection.
 - **NF-12.** Limits on message/upload size; DSL import never executes code or accesses the network.
 
