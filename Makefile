@@ -16,6 +16,8 @@ COMPOSE_DEV := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 
 # Go server the frontend dev server proxies API requests to (see make run).
 C4FORGE_DEV_API_URL ?= http://localhost:8080
+C4FORGE_HTTP_ADDR ?= 127.0.0.1:8080
+C4FORGE_PUBLIC_ORIGIN ?= http://localhost:5173
 
 .PHONY: generate build build-api frontend-install frontend-build frontend-dev run test lint fmt tidy db-up db-down db-reset docker-build up down smoke-test
 
@@ -35,7 +37,7 @@ frontend-dev: frontend-install ## Run the UI with hot reload on :5173, proxying 
 	cd frontend && C4FORGE_DEV_API_URL="$(C4FORGE_DEV_API_URL)" pnpm dev
 
 run: ## Run the server with human-readable logs against the local database (see db-up)
-	C4FORGE_DATABASE_URL="$(C4FORGE_DATABASE_URL)" C4FORGE_LOG_FORMAT=text C4FORGE_LOG_LEVEL=debug go run ./cmd/c4forge
+	C4FORGE_DATABASE_URL="$(C4FORGE_DATABASE_URL)" C4FORGE_HTTP_ADDR="$(C4FORGE_HTTP_ADDR)" C4FORGE_PUBLIC_ORIGIN="$(C4FORGE_PUBLIC_ORIGIN)" C4FORGE_INSECURE_DEV_MODE=true C4FORGE_LOG_FORMAT=text C4FORGE_LOG_LEVEL=debug go run ./cmd/c4forge
 
 test: ## Run all tests with the race detector
 	go test -race ./...

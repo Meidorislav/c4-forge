@@ -153,3 +153,32 @@ func TestPresentationMigrationPreservesExistingWorkspace(t *testing.T) {
 		t.Fatalf("existing data changed: seq=%d description=%q", seq, description)
 	}
 }
+
+func TestUserManagementMigrationPreservesAccounts(t *testing.T) {
+	pool := connectTest(t, dbtest.NewDatabase(t))
+	provider, err := newMigrationProvider(pool)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := provider.UpTo(t.Context(), 4); err != nil {
+		t.Fatal(err)
+	}
+	if err := provider.Close(); err != nil {
+		t.Fatal(err)
+	}
+	const user = "019a2f00-0000-7000-8000-000000000001"
+	if _, err := pool.Exec(t.Context(), `INSERT INTO users(id,email,email_canonical,password_hash,role) VALUES ($1,'admin@example.test','admin@example.test','existing-hash','admin')`, user); err != nil {
+		t.Fatal(err)
+	}
+	if err := Migrate(t.Context(), pool, slog.New(slog.DiscardHandler)); err != nil {
+		t.Fatal(err)
+	}
+	var hash string
+	var mustChange bool
+	if err := pool.QueryRow(t.Context(), `SELECT password_hash,must_change_password FROM users WHERE id=$1`, user).Scan(&hash, &mustChange); err != nil {
+		t.Fatal(err)
+	}
+	if hash != "existing-hash" || mustChange {
+		t.Fatalf("existing account changed: %q %v", hash, mustChange)
+	}
+}

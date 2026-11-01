@@ -42,9 +42,9 @@ Steps are done in order unless noted. The canvas spike (M1) runs in parallel wit
 
 | # | Step | Done when | Covers | Needs | Status |
 | --- | --- | --- | --- | --- | --- |
-| 3.1 | ADR-0004: authentication and authorization (local accounts now, OIDC later, sessions, roles). | ADR accepted. | — | — | todo |
-| 3.2 | Local accounts: sign-up of the first user as admin, login/logout, sessions, CSRF protection, login page. | A user can sign in; unauthenticated requests are refused. | AU-1, AU-4, NF-10, NF-11 | 3.1, 0.3 | todo |
-| 3.3 | Admin user management: invite/create, disable, reset password. | Admin can manage users from the UI. | AU-4 | 3.2 | todo |
+| 3.1 | ADR-0004: authentication and authorization (local accounts now, OIDC later, sessions, roles). | ADR accepted. | — | — | done |
+| 3.2 | Local accounts: sign-up of the first user as admin, login/logout, sessions, CSRF protection, login page. | A user can sign in; unauthenticated requests to protected routes are refused. | AU-1, AU-4, NF-10, NF-11 | 3.1, 0.3 | done |
+| 3.3 | Admin user management: invite/create, disable, reset password. | Admin can manage users from the UI. | AU-4 | 3.2 | done |
 
 ### M4 — Workspaces and realtime
 

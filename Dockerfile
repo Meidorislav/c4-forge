@@ -44,6 +44,10 @@ LABEL org.opencontainers.image.title="c4-forge" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${COMMIT}"
 COPY --from=backend /out/c4forge /c4forge
+COPY --from=backend /src/LICENSE /licenses/c4-forge.txt
+COPY --from=backend /src/internal/auth/PASSFAULT-LICENSE.txt /licenses/passfault.txt
+COPY --from=backend /src/internal/auth/WIKIMEDIA-LICENSE.txt /licenses/wikimedia-common-passwords.txt
+COPY --from=backend /src/internal/auth/SECLISTS-LICENSE.txt /licenses/seclists.txt
 ENV C4FORGE_HTTP_ADDR=:8080
 EXPOSE 8080
 USER nonroot:nonroot

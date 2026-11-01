@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +24,11 @@ const (
 
 // Config is the complete service configuration.
 type Config struct {
+	PublicOrigin        string
+	BootstrapSecret     string
+	InsecureDevelopment bool
+	SessionIdle         time.Duration
+	SessionAbsolute     time.Duration
 	// HTTPAddr is the address the HTTP server listens on (C4FORGE_HTTP_ADDR).
 	HTTPAddr string
 	// LogLevel is the minimum level of emitted log records (C4FORGE_LOG_LEVEL).
@@ -43,6 +50,9 @@ type Config struct {
 func Default() Config {
 	return Config{
 		HTTPAddr:        ":8080",
+		PublicOrigin:    "https://localhost:8080",
+		SessionIdle:     30 * time.Minute,
+		SessionAbsolute: 12 * time.Hour,
 		LogLevel:        slog.LevelInfo,
 		LogFormat:       LogFormatJSON,
 		ShutdownTimeout: 10 * time.Second,
@@ -103,5 +113,75 @@ func Load(getenv func(string) string) (Config, error) {
 		cfg.DatabaseURL = v
 	}
 
+	if v := getenv("C4FORGE_PUBLIC_ORIGIN"); v != "" {
+		cfg.PublicOrigin = v
+	}
+	cfg.BootstrapSecret = getenv("C4FORGE_BOOTSTRAP_SECRET")
+	if cfg.BootstrapSecret != "" && len(cfg.BootstrapSecret) < 32 {
+		errs = append(errs, errors.New("C4FORGE_BOOTSTRAP_SECRET must contain at least 32 bytes"))
+	}
+	if v := getenv("C4FORGE_INSECURE_DEV_MODE"); v != "" {
+		parsed, err := strconv.ParseBool(v)
+		if err != nil {
+			errs = append(errs, errors.New("C4FORGE_INSECURE_DEV_MODE must be true or false"))
+		} else {
+			cfg.InsecureDevelopment = parsed
+		}
+	}
+	for _, setting := range []struct {
+		name   string
+		target *time.Duration
+	}{{"C4FORGE_SESSION_IDLE", &cfg.SessionIdle}, {"C4FORGE_SESSION_ABSOLUTE", &cfg.SessionAbsolute}} {
+		if v := getenv(setting.name); v != "" {
+			d, err := time.ParseDuration(v)
+			if err != nil || d < time.Second || d > 365*24*time.Hour {
+				errs = append(errs, fmt.Errorf("%s must be between 1s and 8760h", setting.name))
+			} else {
+				*setting.target = d
+			}
+		}
+	}
+	if cfg.SessionIdle > cfg.SessionAbsolute {
+		errs = append(errs, errors.New("C4FORGE_SESSION_IDLE must not exceed C4FORGE_SESSION_ABSOLUTE"))
+	}
+	origin, err := url.Parse(cfg.PublicOrigin)
+	if err != nil || origin == nil || origin.User != nil || origin.Hostname() == "" || origin.RawQuery != "" || origin.Fragment != "" || (origin.Path != "" && origin.Path != "/") {
+		errs = append(errs, errors.New("C4FORGE_PUBLIC_ORIGIN must be an origin with scheme, host and optional port"))
+	} else {
+		hostname := strings.ToLower(origin.Hostname())
+		port := origin.Port()
+		if port != "" {
+			portNumber, portErr := strconv.Atoi(port)
+			if portErr != nil || portNumber < 1 || portNumber > 65535 {
+				errs = append(errs, errors.New("C4FORGE_PUBLIC_ORIGIN has an invalid port"))
+			}
+		}
+		if (origin.Scheme == "https" && port == "443") || (origin.Scheme == "http" && port == "80") {
+			port = ""
+		}
+		host := hostname
+		if port != "" {
+			host = net.JoinHostPort(hostname, port)
+		} else if strings.Contains(hostname, ":") {
+			host = "[" + hostname + "]"
+		}
+		cfg.PublicOrigin = origin.Scheme + "://" + host
+		if cfg.InsecureDevelopment {
+			host, _, _ := net.SplitHostPort(cfg.HTTPAddr)
+			if origin.Scheme != "http" || !loopbackHost(origin.Hostname()) || !loopbackHost(host) {
+				errs = append(errs, errors.New("insecure development mode requires an HTTP loopback origin and loopback listener"))
+			}
+		} else if origin.Scheme != "https" {
+			errs = append(errs, errors.New("C4FORGE_PUBLIC_ORIGIN must use HTTPS outside insecure development mode"))
+		}
+	}
 	return cfg, errors.Join(errs...)
+}
+
+func loopbackHost(host string) bool {
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }

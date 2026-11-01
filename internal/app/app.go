@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Meidorislav/c4-forge/frontend"
+	"github.com/Meidorislav/c4-forge/internal/auth"
 	"github.com/Meidorislav/c4-forge/internal/buildinfo"
 	"github.com/Meidorislav/c4-forge/internal/config"
 	"github.com/Meidorislav/c4-forge/internal/db"
@@ -80,6 +81,12 @@ func Run(ctx context.Context, args []string, getenv func(string) string, stdout,
 		return ExitError
 	}
 
+	authService, err := auth.New(ctx, pool, auth.Options{Origin: cfg.PublicOrigin, BootstrapSecret: cfg.BootstrapSecret, InsecureDevelopment: cfg.InsecureDevelopment, IdleTimeout: cfg.SessionIdle, AbsoluteTimeout: cfg.SessionAbsolute})
+	if err != nil {
+		log.Error("cannot initialize authentication", "error", err)
+		return ExitError
+	}
+
 	var lc net.ListenConfig
 	ln, err := lc.Listen(ctx, "tcp", cfg.HTTPAddr)
 	if err != nil {
@@ -96,6 +103,7 @@ func Run(ctx context.Context, args []string, getenv func(string) string, stdout,
 
 	srv := server.New(log, cfg.ShutdownTimeout, server.Options{
 		ReadinessChecks: []server.ReadinessCheck{{Name: "database", Check: pool.Ping}},
+		Auth:            authService.Handler(),
 		UI:              ui,
 	})
 	if err := srv.Serve(ctx, ln); err != nil {
