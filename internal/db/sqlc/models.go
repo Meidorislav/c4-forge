@@ -70,13 +70,15 @@ type Shape struct {
 }
 
 type User struct {
-	ID             uuid.UUID
-	Email          string
-	EmailCanonical string
-	PasswordHash   string
-	Role           string
-	Disabled       bool
-	CreatedAt      pgtype.Timestamptz
+	ID                         uuid.UUID
+	Email                      string
+	EmailCanonical             string
+	PasswordHash               string
+	Role                       string
+	Disabled                   bool
+	CreatedAt                  pgtype.Timestamptz
+	MustChangePassword         bool
+	TemporaryPasswordExpiresAt pgtype.Timestamptz
 }
 
 type View struct {

@@ -1,7 +1,14 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { PasswordChange, UserManagement } from "./UserManagement";
 
-type AuthStatus = { initialized: boolean; authenticated: boolean; email?: string; role?: string };
+type AuthStatus = {
+  initialized: boolean;
+  authenticated: boolean;
+  email?: string;
+  role?: string;
+  mustChangePassword?: boolean;
+};
 type ViewState =
   | { kind: "loading" }
   | { kind: "ready"; status: AuthStatus }
@@ -101,6 +108,15 @@ export function AuthPanel() {
       <section aria-labelledby="account-heading">
         <h2 id="account-heading">{t("auth.signedIn")}</h2>
         <p>{t("auth.signedInAs", { email: view.status.email ?? "" })}</p>
+        {view.status.mustChangePassword ? (
+          <PasswordChange
+            onChanged={() => {
+              void loadStatus().then((status) => setView({ kind: "ready", status }));
+            }}
+          />
+        ) : (
+          view.status.role === "admin" && <UserManagement />
+        )}
         {error && <p role="alert">{error}</p>}
         <button type="button" disabled={pending} onClick={logout}>
           {t("auth.signOut")}

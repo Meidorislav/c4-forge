@@ -79,9 +79,10 @@ func New(ctx context.Context, pool *pgxpool.Pool, opts Options) (*Service, error
 
 // User identifies an authenticated account without returning credentials.
 type User struct {
-	ID    uuid.UUID `json:"id"`
-	Email string    `json:"email"`
-	Role  string    `json:"role"`
+	ID                 uuid.UUID `json:"id"`
+	Email              string    `json:"email"`
+	Role               string    `json:"role"`
+	MustChangePassword bool      `json:"mustChangePassword"`
 }
 
 func normalizeEmail(value string) (display, canonical string, err error) {
@@ -177,12 +178,10 @@ func (s *Service) login(ctx context.Context, email, password string) (string, Us
 	if missing || account.Disabled || !matches {
 		return "", User{}, ErrCredentials
 	}
+	var upgraded string
 	if upgrade {
-		updated, err := s.hashPassword(ctx, password)
+		upgraded, err = s.hashPassword(ctx, password)
 		if err != nil {
-			return "", User{}, err
-		}
-		if err = q.UpdatePasswordHash(ctx, sqlc.UpdatePasswordHashParams{ID: account.ID, PasswordHash: updated, PasswordHash_2: hash}); err != nil {
 			return "", User{}, err
 		}
 	}
@@ -190,10 +189,39 @@ func (s *Service) login(ctx context.Context, email, password string) (string, Us
 	if err != nil {
 		return "", User{}, err
 	}
-	if err = q.CreateSession(ctx, sqlc.CreateSessionParams{TokenHash: tokenHash(token), UserID: account.ID, AbsoluteExpiry: pgtype.Timestamptz{Time: time.Now().Add(s.absolute), Valid: true}}); err != nil {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
 		return "", User{}, err
 	}
-	return token, User{ID: account.ID, Email: account.Email, Role: account.Role}, nil
+	defer func() { _ = tx.Rollback(context.Background()) }()
+	q = sqlc.New(tx)
+	if _, err = q.LockAuthState(ctx); err != nil {
+		return "", User{}, err
+	}
+	current, err := q.LockUser(ctx, account.ID)
+	if err != nil {
+		return "", User{}, err
+	}
+	if current.Disabled || current.PasswordHash != hash || (current.MustChangePassword && (!current.TemporaryPasswordExpiresAt.Valid || !time.Now().Before(current.TemporaryPasswordExpiresAt.Time))) {
+		return "", User{}, ErrCredentials
+	}
+	if upgraded != "" {
+		if err = q.UpdatePasswordHash(ctx, sqlc.UpdatePasswordHashParams{ID: current.ID, PasswordHash: upgraded, PasswordHash_2: hash}); err != nil {
+			return "", User{}, err
+		}
+	}
+	if current.MustChangePassword {
+		if err = q.RevokeUserSessions(ctx, current.ID); err != nil {
+			return "", User{}, err
+		}
+	}
+	if err = q.CreateSession(ctx, sqlc.CreateSessionParams{TokenHash: tokenHash(token), UserID: current.ID, AbsoluteExpiry: pgtype.Timestamptz{Time: time.Now().Add(s.absolute), Valid: true}}); err != nil {
+		return "", User{}, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return "", User{}, err
+	}
+	return token, User{ID: current.ID, Email: current.Email, Role: current.Role, MustChangePassword: current.MustChangePassword}, nil
 }
 
 func (s *Service) resolve(ctx context.Context, token string) (User, error) {
@@ -207,5 +235,5 @@ func (s *Service) resolve(ctx context.Context, token string) (User, error) {
 	if err != nil {
 		return User{}, err
 	}
-	return User{ID: row.ID, Email: row.Email, Role: row.Role}, nil
+	return User{ID: row.ID, Email: row.Email, Role: row.Role, MustChangePassword: row.MustChangePassword}, nil
 }

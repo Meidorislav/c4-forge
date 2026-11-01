@@ -26,6 +26,11 @@ func (s *Service) Handler() http.Handler {
 	mux.HandleFunc("POST /bootstrap", s.bootstrapHTTP)
 	mux.HandleFunc("POST /login", s.loginHTTP)
 	mux.HandleFunc("POST /logout", s.logoutHTTP)
+	mux.HandleFunc("GET /users", s.usersHTTP)
+	mux.HandleFunc("POST /users", s.createUserHTTP)
+	mux.HandleFunc("POST /users/{id}/disable", s.disableUserHTTP)
+	mux.HandleFunc("POST /users/{id}/reset", s.resetUserHTTP)
+	mux.HandleFunc("POST /change-password", s.changePasswordHTTP)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		if r.Method == http.MethodPost && (r.Header.Get("Origin") != s.origin || strings.EqualFold(r.Header.Get("Sec-Fetch-Site"), "cross-site")) {
@@ -69,6 +74,7 @@ func (s *Service) status(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		result["email"] = user.Email
 		result["role"] = user.Role
+		result["mustChangePassword"] = user.MustChangePassword
 	}
 	respond(w, 200, result)
 }

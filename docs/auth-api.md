@@ -27,6 +27,18 @@ and unexpected storage failures return `500`. Authenticated operations never
 accept an actor ID from the browser. No account-management or workspace API is
 introduced here (roadmap 3.3 and 4.1).
 
+## User administration
+
+An active administrator session is required for `GET /api/auth/users`,
+`POST /api/auth/users`, and `POST /api/auth/users/{id}/disable` or `/reset`.
+Mutating requests also require the session CSRF token and configured origin.
+Creation accepts an email and instance role. Creation and reset return a random
+temporary credential once; the administrator must convey it out of band. It
+expires after 24 hours. The recipient must use `POST /api/auth/change-password`
+to choose a new password before accessing administrative functions. Credential
+changes rotate the session and revoke previous sessions. Disabling or resetting
+an account revokes its sessions. The last active admin cannot be disabled.
+
 ## Deployment and development
 
 Set `C4FORGE_PUBLIC_ORIGIN` to the exact public HTTPS origin, and terminate TLS
@@ -51,3 +63,18 @@ users share a limit. This implementation is for a single application instance.
 An application restart also invalidates outstanding CSRF tokens, so clients
 request a fresh token before each action; authenticated sessions remain stored
 in PostgreSQL.
+
+## Administrator recovery
+
+Keep at least two administrators with permanent passwords and maintain tested,
+protected PostgreSQL backups. An active administrator can reset another account
+and pass the temporary password to its owner over a trusted channel. An account
+with an unclaimed or expired temporary password does not count as the remaining
+usable administrator when disabling another account.
+
+If no administrator can sign in, stop the service and restore a verified backup
+containing an accessible administrator using the operator's PostgreSQL recovery
+process, then start the service and reset the affected accounts. Restoring an old
+backup can discard changes made since that backup; preserve a copy of the current
+database first and follow the site's recovery policy. Bootstrap remains closed on
+an initialized database and is not an account-recovery mechanism.

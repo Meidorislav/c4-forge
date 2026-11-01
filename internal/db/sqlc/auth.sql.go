@@ -23,6 +23,17 @@ func (q *Queries) AuthInitialized(ctx context.Context) (bool, error) {
 	return initialized, err
 }
 
+const countActiveAdmins = `-- name: CountActiveAdmins :one
+SELECT count(*) FROM users WHERE role = 'admin' AND NOT disabled AND NOT must_change_password
+`
+
+func (q *Queries) CountActiveAdmins(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countActiveAdmins)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createSession = `-- name: CreateSession :exec
 INSERT INTO auth_sessions (token_hash,user_id,absolute_expiry) VALUES ($1,$2,$3)
 `
@@ -35,6 +46,32 @@ type CreateSessionParams struct {
 
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
 	_, err := q.db.Exec(ctx, createSession, arg.TokenHash, arg.UserID, arg.AbsoluteExpiry)
+	return err
+}
+
+const createTemporaryUser = `-- name: CreateTemporaryUser :exec
+INSERT INTO users (id, email, email_canonical, password_hash, role, must_change_password, temporary_password_expires_at)
+VALUES ($1, $2, $3, $4, $5, true, $6)
+`
+
+type CreateTemporaryUserParams struct {
+	ID                         uuid.UUID
+	Email                      string
+	EmailCanonical             string
+	PasswordHash               string
+	Role                       string
+	TemporaryPasswordExpiresAt pgtype.Timestamptz
+}
+
+func (q *Queries) CreateTemporaryUser(ctx context.Context, arg CreateTemporaryUserParams) error {
+	_, err := q.db.Exec(ctx, createTemporaryUser,
+		arg.ID,
+		arg.Email,
+		arg.EmailCanonical,
+		arg.PasswordHash,
+		arg.Role,
+		arg.TemporaryPasswordExpiresAt,
+	)
 	return err
 }
 
@@ -70,8 +107,20 @@ func (q *Queries) DeleteExpiredSessions(ctx context.Context) error {
 	return err
 }
 
+const disableUser = `-- name: DisableUser :execrows
+UPDATE users SET disabled = true WHERE id = $1 AND NOT disabled
+`
+
+func (q *Queries) DisableUser(ctx context.Context, id uuid.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, disableUser, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const findUserByEmail = `-- name: FindUserByEmail :one
-SELECT id, email, email_canonical, password_hash, role, disabled, created_at FROM users WHERE email_canonical = $1
+SELECT id, email, email_canonical, password_hash, role, disabled, created_at, must_change_password, temporary_password_expires_at FROM users WHERE email_canonical = $1
 `
 
 func (q *Queries) FindUserByEmail(ctx context.Context, emailCanonical string) (User, error) {
@@ -85,8 +134,48 @@ func (q *Queries) FindUserByEmail(ctx context.Context, emailCanonical string) (U
 		&i.Role,
 		&i.Disabled,
 		&i.CreatedAt,
+		&i.MustChangePassword,
+		&i.TemporaryPasswordExpiresAt,
 	)
 	return i, err
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT id, email, role, disabled, must_change_password FROM users ORDER BY email_canonical
+`
+
+type ListUsersRow struct {
+	ID                 uuid.UUID
+	Email              string
+	Role               string
+	Disabled           bool
+	MustChangePassword bool
+}
+
+func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
+	rows, err := q.db.Query(ctx, listUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListUsersRow{}
+	for rows.Next() {
+		var i ListUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Role,
+			&i.Disabled,
+			&i.MustChangePassword,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const lockAuthState = `-- name: LockAuthState :one
@@ -100,13 +189,53 @@ func (q *Queries) LockAuthState(ctx context.Context) (bool, error) {
 	return initialized, err
 }
 
+const lockUser = `-- name: LockUser :one
+SELECT id, email, email_canonical, password_hash, role, disabled, created_at, must_change_password, temporary_password_expires_at FROM users WHERE id = $1 FOR UPDATE
+`
+
+func (q *Queries) LockUser(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, lockUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.EmailCanonical,
+		&i.PasswordHash,
+		&i.Role,
+		&i.Disabled,
+		&i.CreatedAt,
+		&i.MustChangePassword,
+		&i.TemporaryPasswordExpiresAt,
+	)
+	return i, err
+}
+
+const resetUserPassword = `-- name: ResetUserPassword :execrows
+UPDATE users SET password_hash = $2, must_change_password = true, temporary_password_expires_at = $3 WHERE id = $1 AND NOT disabled
+`
+
+type ResetUserPasswordParams struct {
+	ID                         uuid.UUID
+	PasswordHash               string
+	TemporaryPasswordExpiresAt pgtype.Timestamptz
+}
+
+func (q *Queries) ResetUserPassword(ctx context.Context, arg ResetUserPasswordParams) (int64, error) {
+	result, err := q.db.Exec(ctx, resetUserPassword, arg.ID, arg.PasswordHash, arg.TemporaryPasswordExpiresAt)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const resolveSession = `-- name: ResolveSession :one
 UPDATE auth_sessions AS s SET last_activity = now()
 FROM users AS u
 WHERE s.token_hash = $1 AND s.user_id = u.id AND NOT u.disabled
+  AND (NOT u.must_change_password OR u.temporary_password_expires_at > now())
   AND s.revoked_at IS NULL AND s.absolute_expiry > now()
   AND s.last_activity > now() - make_interval(secs => $2::double precision)
-RETURNING u.id,u.email,u.role
+RETURNING u.id,u.email,u.role,u.must_change_password
 `
 
 type ResolveSessionParams struct {
@@ -115,15 +244,21 @@ type ResolveSessionParams struct {
 }
 
 type ResolveSessionRow struct {
-	ID    uuid.UUID
-	Email string
-	Role  string
+	ID                 uuid.UUID
+	Email              string
+	Role               string
+	MustChangePassword bool
 }
 
 func (q *Queries) ResolveSession(ctx context.Context, arg ResolveSessionParams) (ResolveSessionRow, error) {
 	row := q.db.QueryRow(ctx, resolveSession, arg.TokenHash, arg.IdleSeconds)
 	var i ResolveSessionRow
-	err := row.Scan(&i.ID, &i.Email, &i.Role)
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Role,
+		&i.MustChangePassword,
+	)
 	return i, err
 }
 
@@ -136,12 +271,35 @@ func (q *Queries) RevokeSession(ctx context.Context, tokenHash []byte) error {
 	return err
 }
 
+const revokeUserSessions = `-- name: RevokeUserSessions :exec
+UPDATE auth_sessions SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL
+`
+
+func (q *Queries) RevokeUserSessions(ctx context.Context, userID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, revokeUserSessions, userID)
+	return err
+}
+
 const setAuthInitialized = `-- name: SetAuthInitialized :exec
 UPDATE auth_state SET initialized = true WHERE singleton = true
 `
 
 func (q *Queries) SetAuthInitialized(ctx context.Context) error {
 	_, err := q.db.Exec(ctx, setAuthInitialized)
+	return err
+}
+
+const setPermanentPassword = `-- name: SetPermanentPassword :exec
+UPDATE users SET password_hash = $2, must_change_password = false, temporary_password_expires_at = NULL WHERE id = $1
+`
+
+type SetPermanentPasswordParams struct {
+	ID           uuid.UUID
+	PasswordHash string
+}
+
+func (q *Queries) SetPermanentPassword(ctx context.Context, arg SetPermanentPasswordParams) error {
+	_, err := q.db.Exec(ctx, setPermanentPassword, arg.ID, arg.PasswordHash)
 	return err
 }
 
