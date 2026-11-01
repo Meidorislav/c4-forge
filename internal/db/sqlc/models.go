@@ -9,6 +9,20 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AuthSession struct {
+	TokenHash      []byte
+	UserID         uuid.UUID
+	CreatedAt      pgtype.Timestamptz
+	LastActivity   pgtype.Timestamptz
+	AbsoluteExpiry pgtype.Timestamptz
+	RevokedAt      pgtype.Timestamptz
+}
+
+type AuthState struct {
+	Singleton   bool
+	Initialized bool
+}
+
 type Element struct {
 	WorkspaceID uuid.UUID
 	ID          uuid.UUID
@@ -53,6 +67,16 @@ type Shape struct {
 	ViewID      uuid.UUID
 	Type        string
 	Attrs       []byte
+}
+
+type User struct {
+	ID             uuid.UUID
+	Email          string
+	EmailCanonical string
+	PasswordHash   string
+	Role           string
+	Disabled       bool
+	CreatedAt      pgtype.Timestamptz
 }
 
 type View struct {

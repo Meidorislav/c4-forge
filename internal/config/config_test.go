@@ -43,6 +43,9 @@ func TestLoadValid(t *testing.T) {
 	}
 	want := Config{
 		HTTPAddr:        "127.0.0.1:9090",
+		PublicOrigin:    "https://localhost:8080",
+		SessionIdle:     30 * time.Minute,
+		SessionAbsolute: 12 * time.Hour,
 		LogLevel:        slog.LevelDebug,
 		LogFormat:       LogFormatText,
 		ShutdownTimeout: 3 * time.Second,
@@ -114,5 +117,39 @@ func TestLoadReportsAllErrors(t *testing.T) {
 		if !strings.Contains(err.Error(), key) {
 			t.Errorf("error %q does not mention %s", err, key)
 		}
+	}
+}
+
+func TestAuthenticationConfiguration(t *testing.T) {
+	tests := []struct {
+		name  string
+		vars  map[string]string
+		valid bool
+	}{
+		{"secure origin", map[string]string{"C4FORGE_PUBLIC_ORIGIN": "https://example.test"}, true},
+		{"http without dev mode", map[string]string{"C4FORGE_PUBLIC_ORIGIN": "http://localhost:5173"}, false},
+		{"loopback development", map[string]string{"C4FORGE_INSECURE_DEV_MODE": "true", "C4FORGE_PUBLIC_ORIGIN": "http://localhost:5173", "C4FORGE_HTTP_ADDR": "127.0.0.1:8080"}, true},
+		{"wildcard listener", map[string]string{"C4FORGE_INSECURE_DEV_MODE": "true", "C4FORGE_PUBLIC_ORIGIN": "http://localhost:5173", "C4FORGE_HTTP_ADDR": ":8080"}, false},
+		{"remote development origin", map[string]string{"C4FORGE_INSECURE_DEV_MODE": "true", "C4FORGE_PUBLIC_ORIGIN": "http://example.test", "C4FORGE_HTTP_ADDR": "127.0.0.1:8080"}, false},
+		{"short secret", map[string]string{"C4FORGE_BOOTSTRAP_SECRET": "short-secret"}, false},
+		{"idle exceeds absolute", map[string]string{"C4FORGE_SESSION_IDLE": "2h", "C4FORGE_SESSION_ABSOLUTE": "1h"}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Load(env(tt.vars))
+			if (err == nil) != tt.valid {
+				t.Fatalf("Load() error = %v, valid = %v", err, tt.valid)
+			}
+			if err != nil && strings.Contains(err.Error(), "short-secret") {
+				t.Fatalf("secret leaked in error: %v", err)
+			}
+		})
+	}
+}
+
+func TestPublicOriginCanonicalization(t *testing.T) {
+	cfg, err := Load(env(map[string]string{"C4FORGE_PUBLIC_ORIGIN": "https://EXAMPLE.test:443/"}))
+	if err != nil || cfg.PublicOrigin != "https://example.test" {
+		t.Fatalf("origin = %q, error = %v", cfg.PublicOrigin, err)
 	}
 }

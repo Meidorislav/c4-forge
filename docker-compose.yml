@@ -24,6 +24,10 @@ services:
         condition: service_healthy
     environment:
       C4FORGE_DATABASE_URL: postgres://c4forge:c4forge@postgres:5432/c4forge?sslmode=disable
+      C4FORGE_PUBLIC_ORIGIN: ${C4FORGE_PUBLIC_ORIGIN:-https://localhost:8080}
+      C4FORGE_BOOTSTRAP_SECRET: ${C4FORGE_BOOTSTRAP_SECRET:-}
+      C4FORGE_SESSION_IDLE: ${C4FORGE_SESSION_IDLE:-30m}
+      C4FORGE_SESSION_ABSOLUTE: ${C4FORGE_SESSION_ABSOLUTE:-12h}
     ports:
       # Override the host port with C4FORGE_HTTP_PORT if 8080 is taken.
       - "127.0.0.1:${C4FORGE_HTTP_PORT:-8080}:8080"

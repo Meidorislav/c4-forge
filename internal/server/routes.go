@@ -21,6 +21,9 @@ func NewHandler(log *slog.Logger, opts Options) http.Handler {
 	// /api is reserved for the API: unknown paths there are JSON errors, not
 	// the UI's index page.
 	r.Route("/api", func(r chi.Router) {
+		if opts.Auth != nil {
+			r.Handle("/auth/*", http.StripPrefix("/api/auth", opts.Auth))
+		}
 		r.NotFound(apiNotFound)
 	})
 
