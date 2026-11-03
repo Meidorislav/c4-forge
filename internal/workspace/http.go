@@ -1,4 +1,4 @@
-// Package workspace implements membership-scoped workspace metadata management.
+// Package workspace implements workspace metadata and membership management.
 package workspace
 
 import (
@@ -48,6 +48,11 @@ func Handler(pool *pgxpool.Pool, authentication *auth.Service) http.Handler {
 	mux.HandleFunc("GET /{id}", s.get)
 	mux.HandleFunc("PUT /{id}", s.mutate)
 	mux.HandleFunc("DELETE /{id}", s.mutate)
+	mux.HandleFunc("GET /{id}/members", s.members)
+	mux.HandleFunc("POST /{id}/members", s.mutateMember)
+	mux.HandleFunc("PUT /{id}/members/{userId}", s.mutateMember)
+	mux.HandleFunc("DELETE /{id}/members/{userId}", s.mutateMember)
+	mux.HandleFunc("POST /{id}/transfer", s.mutateMember)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		actor, err := s.auth.AuthorizeRequest(r, nil)
@@ -123,21 +128,26 @@ type metadata struct {
 	Description *string `json:"description"`
 }
 
-func readMetadata(w http.ResponseWriter, r *http.Request) (metadata, bool) {
-	var body metadata
+func readBody(w http.ResponseWriter, r *http.Request, target any) bool {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil || mediaType != "application/json" {
-		return body, false
+		return false
 	}
 	data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 32768))
 	if err != nil || !utf8.Valid(data) {
-		return body, false
+		return false
 	}
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	if decoder.Decode(&body) != nil || !errors.Is(decoder.Decode(new(any)), io.EOF) || body.Name == nil || body.Description == nil {
+	return decoder.Decode(target) == nil && errors.Is(decoder.Decode(new(any)), io.EOF)
+}
+
+func readMetadata(w http.ResponseWriter, r *http.Request) (metadata, bool) {
+	var body metadata
+	if !readBody(w, r, &body) || body.Name == nil || body.Description == nil {
 		return body, false
 	}
+
 	name := strings.TrimSpace(*body.Name)
 	body.Name = &name
 	if name == "" || utf8.RuneCountInString(name) > 200 || utf8.RuneCountInString(*body.Description) > 4000 {

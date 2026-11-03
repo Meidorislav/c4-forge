@@ -28,7 +28,7 @@ internal/db/migrations/ SQL migrations, embedded into the binary
 internal/db/queries/    SQL query sources; sqlc.yaml generates internal/db/sqlc/
 internal/model/         immutable C4 model, validation, operations and change history
 internal/modelstore/    transactional model persistence and per-workspace working sets
-internal/workspace/     membership-scoped workspace metadata API
+internal/workspace/     membership-scoped workspace metadata and members API
 internal/db/dbtest/     real PostgreSQL databases for integration tests (Testcontainers)
 internal/buildinfo/     version and revision of the binary
 frontend/               web UI: React, TypeScript, Vite; embed*.go embeds the build into the binary

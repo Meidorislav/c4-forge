@@ -45,6 +45,34 @@ export const en = {
     conflict:
       "This operation is unavailable; check the account, active administrators and workspace owners.",
   },
+  members: {
+    title: "Workspace members",
+    manage: "Manage members",
+    hint: "Add an existing account by email. Owners manage the workspace and its members; editors edit the model; viewers can read it.",
+    email: "Member email",
+    role: "Workspace role",
+    roleFor: "Workspace role for {{email}}",
+    owner: "Owner",
+    editor: "Editor",
+    viewer: "Viewer",
+    you: "(you)",
+    disabled: "(disabled)",
+    add: "Add member",
+    remove: "Remove member",
+    transfer: "Transfer ownership",
+    close: "Close members",
+    loading: "Loading members…",
+    error:
+      "Members could not be loaded or changed. Check your session and permissions, then try again.",
+    lastOwner: "The workspace must retain at least one enabled owner. Add another owner first.",
+    unavailable:
+      "Check the email and membership. The account must be enabled, and a new owner must complete any required password change.",
+    confirmTitle: "Confirm membership change",
+    confirmTransfer:
+      "Transfer ownership to {{email}}? You will become an editor and lose member management permissions.",
+    confirmRemove: "Remove {{email}} from this workspace? Their access will be revoked.",
+    confirm: "Confirm change",
+  },
   workspaces: {
     title: "Workspaces",
     name: "Workspace name",

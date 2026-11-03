@@ -51,7 +51,7 @@ Steps are done in order unless noted. The canvas spike (M1) runs in parallel wit
 | # | Step | Done when | Covers | Needs | Status |
 | --- | --- | --- | --- | --- | --- |
 | 4.1 | Workspace REST API and list page: create, rename, delete, search and sort; owner membership. | Workspaces can be managed in the UI. | WS-1, WS-2 | 2.3, 3.2, ADR-0006 | done |
-| 4.2 | Workspace roles editor/viewer, enforced in REST; members UI. | A viewer cannot change anything; tests cover each endpoint. | AU-3 (partial) | 4.1 | todo |
+| 4.2 | Workspace roles editor/viewer, enforced in REST; members UI. | A viewer cannot change anything; tests cover each endpoint. | AU-3 (partial) | 4.1, ADR-0006 | done |
 | 4.3 | `docs/protocol.md` and the WebSocket endpoint: snapshot, submit batch, ack/reject, broadcast, idempotent batch IDs, catch-up by sequence number; permissions enforced. | A Go test client covers the whole protocol, including reconnect and retries. | CO-1, CO-3, CO-4, NF-10 | 4.2 | todo |
 | 4.4 | Presence over the WebSocket: who is online, current view, cursor, selection, drag positions (never persisted). | Test client sees other clients' presence. | CO-2 | 4.3 | todo |
 

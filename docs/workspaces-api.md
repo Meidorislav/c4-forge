@@ -1,6 +1,6 @@
 # Workspace API
 
-M4/4.1 implements WS-1 and WS-2 under ADR-0004 and ADR-0006.
+M4/4.1–4.2 implement WS-1, WS-2 and workspace roles (AU-3) under ADR-0004 and ADR-0006.
 The API uses the session cookie from `auth-api.md`. All requests require an
 active session and a completed mandatory password change. Mutations require
 an exact configured `Origin` and `X-CSRF-Token` from `GET /api/auth/csrf`.
@@ -42,8 +42,7 @@ clients must not automatically retry mutations after an ambiguous response.
 
 Account disabling returns 409 `last_owner` when the target is the last enabled
 owner of any workspace. No account/session change commits, and no inaccessible
-workspace details are returned. Member management and ownership transfer are
-scheduled for 4.2.
+workspace details are returned. Member management and ownership transfer are described below.
 
 ## Upgrade behavior
 
@@ -52,3 +51,40 @@ preserves them, with a null name and creator; they remain inaccessible through
 this API. Do not infer ownership from history. There is no automatic assignment
 to an administrator or normal administrator API for claiming these rows.
 Back up the database before any explicit operator migration of such data.
+
+## Members and ownership (M4/4.2)
+
+All member endpoints require workspace owner permission. Nonmembers receive
+404, other members receive 403. Instance administrators have no bypass.
+No endpoint exposes the instance user directory. Add an existing enabled account
+by its exact email (trimmed and matched case-insensitively); account creation
+remains an instance administrator operation. No email is sent.
+
+| Method | Path under `/api/workspaces/{id}` | Body | Result |
+| --- | --- | --- | --- |
+| GET | `/members` | — | 200, member array |
+| POST | `/members` | `{"email":"person@example.test","role":"viewer"}` | 204, add editor or viewer |
+| PUT | `/members/{userId}` | `{"role":"editor"}` | 204, set owner/editor/viewer |
+| DELETE | `/members/{userId}` | — | 204, remove membership |
+| POST | `/transfer` | `{"userId":"UUID"}` | 204, promote existing member and demote caller to editor atomically |
+
+Member objects contain `userId`, `email`, `role`, `disabled`,
+`mustChangePassword` and `isCurrentUser`. Disabled accounts retain memberships
+but cannot access the workspace or count as enabled owners. An account with a
+mandatory password change may be added as editor/viewer but cannot be promoted
+to owner or receive a transfer until the password change is complete.
+
+POST refuses an existing membership, a nonexistent account or a disabled
+account with 409 `member_unavailable`. PUT, DELETE and transfer return 404
+`not found` for a missing member within an authorized workspace. A disabled or
+password-change-required ownership recipient returns 409 `member_unavailable`.
+Transferring to oneself is 400 `invalid input`. Unsupported roles, invalid UUIDs
+and invalid bodies are 400 `invalid input`.
+
+Demoting or removing the last enabled owner returns 409 `last_owner` with no
+changes committed. Other owners may demote/remove themselves. A transfer needs
+no recipient acceptance; its initiating owner becomes editor. Role changes,
+removals, transfer and account disabling share the lifecycle lock before taking
+the workspace row lock and rechecking permissions and owner counts. Membership
+changes do not update the model/metadata last-modified timestamp. Current REST
+requests check membership; realtime revocation ordering is specified in 4.3.

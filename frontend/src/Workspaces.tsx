@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { WorkspaceMembers } from "./WorkspaceMembers";
 
 type Workspace = {
   id: string;
@@ -11,6 +12,7 @@ type Workspace = {
 
 export function Workspaces() {
   const { t } = useTranslation();
+  const [membersFor, setMembersFor] = useState<string | null>(null);
   const [items, setItems] = useState<Workspace[]>([]);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("modified_desc");
@@ -141,6 +143,9 @@ export function Workspaces() {
             <p>{t("workspaces.modified", { value: new Date(item.updatedAt).toLocaleString() })}</p>
             {item.role === "owner" && (
               <>
+                <button type="button" disabled={pending} onClick={() => setMembersFor(item.id)}>
+                  {t("members.manage")}
+                </button>
                 <button
                   type="button"
                   disabled={pending}
@@ -162,6 +167,14 @@ export function Workspaces() {
           </li>
         ))}
       </ul>
+      {membersFor && items.some((item) => item.id === membersFor && item.role === "owner") && (
+        <WorkspaceMembers
+          key={membersFor}
+          workspaceId={membersFor}
+          onClose={() => setMembersFor(null)}
+          onChanged={() => setRevision((value) => value + 1)}
+        />
+      )}
       {deleting && (
         <fieldset disabled={pending}>
           <legend>{t("workspaces.confirmTitle")}</legend>
