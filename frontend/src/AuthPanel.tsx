@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PasswordChange, UserManagement } from "./UserManagement";
+import { Workspaces } from "./Workspaces";
 
 type AuthStatus = {
   initialized: boolean;
@@ -115,7 +116,10 @@ export function AuthPanel() {
             }}
           />
         ) : (
-          view.status.role === "admin" && <UserManagement />
+          <>
+            <Workspaces />
+            {view.status.role === "admin" && <UserManagement />}
+          </>
         )}
         {error && <p role="alert">{error}</p>}
         <button type="button" disabled={pending} onClick={logout}>

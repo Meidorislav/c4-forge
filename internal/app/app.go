@@ -17,6 +17,7 @@ import (
 	"github.com/Meidorislav/c4-forge/internal/config"
 	"github.com/Meidorislav/c4-forge/internal/db"
 	"github.com/Meidorislav/c4-forge/internal/server"
+	"github.com/Meidorislav/c4-forge/internal/workspace"
 )
 
 // Exit codes returned by Run.
@@ -104,6 +105,7 @@ func Run(ctx context.Context, args []string, getenv func(string) string, stdout,
 	srv := server.New(log, cfg.ShutdownTimeout, server.Options{
 		ReadinessChecks: []server.ReadinessCheck{{Name: "database", Check: pool.Ping}},
 		Auth:            authService.Handler(),
+		Workspaces:      workspace.Handler(pool, authService),
 		UI:              ui,
 	})
 	if err := srv.Serve(ctx, ln); err != nil {

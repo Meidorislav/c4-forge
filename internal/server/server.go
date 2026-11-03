@@ -20,7 +20,8 @@ type Server struct {
 
 // Options configures what the server serves.
 type Options struct {
-	Auth http.Handler
+	Auth       http.Handler
+	Workspaces http.Handler
 	// ReadinessChecks are the dependencies reported by /readyz.
 	ReadinessChecks []ReadinessCheck
 	// UI is the built web UI. Nil means the binary was built without it.

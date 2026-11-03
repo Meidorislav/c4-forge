@@ -149,6 +149,10 @@ func TestPresentationMigrationPreservesExistingWorkspace(t *testing.T) {
 	if err := pool.QueryRow(t.Context(), `SELECT w.seq,e.attrs->>'description' FROM workspaces w JOIN elements e ON e.workspace_id=w.id WHERE w.id=$1`, workspace).Scan(&seq, &description); err != nil {
 		t.Fatal(err)
 	}
+	var unowned bool
+	if err := pool.QueryRow(t.Context(), `SELECT name IS NULL AND created_by IS NULL AND NOT EXISTS (SELECT 1 FROM workspace_members WHERE workspace_id=$1) FROM workspaces WHERE id=$1`, workspace).Scan(&unowned); err != nil || !unowned {
+		t.Fatalf("legacy workspace ownership changed: unowned=%v err=%v", unowned, err)
+	}
 	if seq != 7 || description != "preserve" {
 		t.Fatalf("existing data changed: seq=%d description=%q", seq, description)
 	}

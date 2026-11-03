@@ -182,6 +182,19 @@ func (s *Service) disableUserHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if _, err = q.LockOwnedWorkspaces(ctx, id); err != nil {
+		s.adminError(w, err)
+		return
+	}
+	lastOwner, err := q.IsLastWorkspaceOwner(ctx, id)
+	if err != nil {
+		s.adminError(w, err)
+		return
+	}
+	if lastOwner {
+		respond(w, 409, map[string]string{"error": "last_owner"})
+		return
+	}
 	_, err = q.DisableUser(ctx, id)
 	if err == nil {
 		err = q.RevokeUserSessions(ctx, id)

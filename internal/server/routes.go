@@ -24,6 +24,19 @@ func NewHandler(log *slog.Logger, opts Options) http.Handler {
 		if opts.Auth != nil {
 			r.Handle("/auth/*", http.StripPrefix("/api/auth", opts.Auth))
 		}
+		if opts.Workspaces != nil {
+			handler := http.StripPrefix("/api/workspaces", opts.Workspaces)
+			// ServeMux expects a slash at its collection root without redirecting POST.
+			root := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				clone := req.Clone(req.Context())
+				u := *req.URL
+				u.Path = "/api/workspaces/"
+				clone.URL = &u
+				handler.ServeHTTP(w, clone)
+			})
+			r.Handle("/workspaces", root)
+			r.Handle("/workspaces/*", handler)
+		}
 		r.NotFound(apiNotFound)
 	})
 

@@ -91,6 +91,17 @@ type View struct {
 }
 
 type Workspace struct {
-	ID  uuid.UUID
-	Seq int64
+	ID          uuid.UUID
+	Seq         int64
+	Name        pgtype.Text
+	Description string
+	CreatedBy   pgtype.UUID
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+type WorkspaceMember struct {
+	WorkspaceID uuid.UUID
+	UserID      uuid.UUID
+	Role        string
 }

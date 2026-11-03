@@ -37,7 +37,9 @@ temporary credential once; the administrator must convey it out of band. It
 expires after 24 hours. The recipient must use `POST /api/auth/change-password`
 to choose a new password before accessing administrative functions. Credential
 changes rotate the session and revoke previous sessions. Disabling or resetting
-an account revokes its sessions. The last active admin cannot be disabled.
+an account revokes its sessions. The last active admin cannot be disabled. Disabling the last enabled workspace
+owner returns 409 with `{"error":"last_owner"}` and preserves the account and
+sessions (ADR-0006); see [Workspace API](workspaces-api.md).
 
 ## Deployment and development
 
